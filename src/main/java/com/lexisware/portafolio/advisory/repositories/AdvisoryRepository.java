@@ -43,4 +43,7 @@ public interface AdvisoryRepository extends JpaRepository<AdvisoryEntity, Long> 
 
     // Elimina asesorías por programador y estado
     void deleteByProgrammerIdAndStatusIn(String programmerId, java.util.Collection<AdvisoryEntity.Status> statuses);
+
+    // Elimina asesorías por solicitante y estado
+    void deleteByRequesterEmailAndStatusIn(String requesterEmail, java.util.Collection<AdvisoryEntity.Status> statuses);
 }

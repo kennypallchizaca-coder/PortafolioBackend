@@ -40,4 +40,7 @@ public interface AdvisoryService {
 
     // Elimina historial de asesorías (completadas)
     void eliminarHistorial(String programmerUid);
+
+    // Elimina historial de asesorías de solicitante (completadas)
+    void eliminarHistorialSolicitante(String requesterEmail);
 }

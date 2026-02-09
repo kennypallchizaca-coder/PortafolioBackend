@@ -187,4 +187,13 @@ public class AdvisoryServiceImpl implements AdvisoryService {
                 programmerUid,
                 java.util.List.of(AdvisoryEntity.Status.approved, AdvisoryEntity.Status.rejected));
     }
+
+    // Elimina historial de asesorías de solicitante (completadas)
+    @Override
+    @Transactional
+    public void eliminarHistorialSolicitante(String requesterEmail) {
+        advisoryRepository.deleteByRequesterEmailAndStatusIn(
+                requesterEmail,
+                java.util.List.of(AdvisoryEntity.Status.approved, AdvisoryEntity.Status.rejected));
+    }
 }

@@ -140,4 +140,12 @@ public class AdvisoryController {
         advisoryService.eliminarHistorial(uid);
         return ResponseEntity.noContent().build();
     }
+
+    // Elimina historial de asesorías de solicitante (completadas)
+    @DeleteMapping("/requester/{email}")
+    public ResponseEntity<Void> eliminarHistorialSolicitante(
+            @PathVariable("email") String email) {
+        advisoryService.eliminarHistorialSolicitante(email);
+        return ResponseEntity.noContent().build();
+    }
 }
