@@ -81,9 +81,7 @@ proyecto/
 │
 └── Codigo Fuente (src/main/java)
     └── com.lexisware.portafolio
-        ├── advisory/ ───────────────── Módulo de Asesorías
-        ├── auth/ ───────────────────── Módulo de Autenticación
-        ├── config/ ─────────────────── Configuraciones Spring
+        ├── dashboard/ ──────────────── Módulo de Estadísticas
         ├── files/ ──────────────────── Gestión de Archivos
         ├── portfolio/ ──────────────── Gestión de Portafolios
         ├── project/ ────────────────── Gestión de Proyectos
@@ -139,12 +137,34 @@ proyecto/
 │   │   │   ├── AuthResponse.java
 │   │   │   ├── LoginRequest.java
 │   │   │   └── RegisterRequest.java
-│   │   ├──  entities/               # (Vacío - usa UserEntity)
-│   │   ├──  mappers/                # (Vacío - usa UserMapper)
-│   │   ├──  models/                 # (Vacío - usa User)
-│   │   ├──  repositories/           # (Vacío - usa UserRepository)
+│   │   ├──  entities/
+│   │   │   └── AuthLogEntity.java
+│   │   ├──  mappers/
+│   │   │   └── AuthMapper.java
+│   │   ├──  models/
+│   │   │   └── UserSession.java
+│   │   ├──  repositories/
+│   │   │   └── AuthLogRepository.java
 │   │   └──  services/
-│   │       └── AuthService.java
+│   │       ├── AuthService.java
+│   │       └── CustomUserDetailsService.java
+│   │
+│   ├──  dashboard/                  # ═══ MÓDULO: Dashboard ═══
+│   │   ├──  controllers/
+│   │   │   └── DashboardController.java
+│   │   ├──  dtos/
+│   │   │   ├── DashboardStats.java
+│   │   │   └── UserProjectCount.java
+│   │   ├──  entities/
+│   │   │   └── DashboardConfigEntity.java
+│   │   ├──  mappers/
+│   │   │   └── DashboardMapper.java
+│   │   ├──  models/
+│   │   │   └── DashboardSummary.java
+│   │   ├──  repositories/
+│   │   │   └── DashboardConfigRepository.java
+│   │   └──  services/
+│   │       └── DashboardService.java
 │   │
 │   ├──  config/                     # ═══ MÓDULO: Configuración ═══
 │   │   ├── CloudinaryConfig.java
@@ -159,6 +179,14 @@ proyecto/
 │   │   │   └── FileController.java
 │   │   ├──  dtos/
 │   │   │   └── UploadResponseDto.java
+│   │   ├──  entities/
+│   │   │   └── FileEntity.java
+│   │   ├──  mappers/
+│   │   │   └── FileMapper.java
+│   │   ├──  models/
+│   │   │   └── FileModel.java
+│   │   ├──  repositories/
+│   │   │   └── FileRepository.java
 │   │   └──  services/
 │   │       └── CloudinaryService.java
 │   │
@@ -522,7 +550,7 @@ Gestionar el ciclo de vida completo de las solicitudes de asesoría técnica ent
 ### 5.2 Módulo `auth/` (Autenticación)
 
 #### Responsabilidad
-Gestionar el acceso seguro al sistema mediante autenticación JWT, incluyendo registro de nuevos usuarios e inicio de sesión.
+Gestionar el acceso seguro al sistema mediante autenticación JWT, incluyendo registro de nuevos usuarios, inicio de sesión y auditoría de accesos.
 
 #### Archivos Incluidos
 
@@ -530,12 +558,13 @@ Gestionar el acceso seguro al sistema mediante autenticación JWT, incluyendo re
 |---------|------|-----------|
 | `AuthController.java` | Controller | Endpoints públicos `/api/auth/*` |
 | `AuthService.java` | Service | Validación de credenciales, generación de tokens |
+| `AuthLogEntity.java` | Entity | Registro de auditoría de inicios de sesión |
+| `AuthMapper.java` | Mapper | Mapeo de sesiones y respuestas |
+| `UserSession.java` | Model | Representación de dominio de una sesión activa |
+| `AuthLogRepository.java`| Repository | Persistencia de logs de autenticación |
 | `RegisterRequest.java` | DTO | Validación de datos de registro |
 | `LoginRequest.java` | DTO | Validación de credenciales de login |
 | `AuthResponse.java` | DTO | Token JWT + datos básicos del usuario |
-
-#### Carpetas Vacías
-- `entities/`, `mappers/`, `models/`, `repositories/`: Vacías porque reutiliza estructuras del módulo `users/`
 
 #### Entrada/Salida de Datos
 
@@ -550,18 +579,36 @@ REGISTRO:
 LOGIN:
 ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
 │ LoginRequest  │────►│  AuthService  │────►│  AuthResponse │
-│{email,pass}   │     │(pass compare) │     │{token,user}   │
+│{email,pass}   │     │(AuthLog check)│     │{token,user}   │
 └───────────────┘     └───────────────┘     └───────────────┘
 ```
 
 #### Relaciones con Otras Carpetas
 
-- **Depende de:** `users/` (UserRepository, UserEntity, UserMapper), `config/` (JwtTokenProvider, PasswordEncoder), `utils/` (EmailService, excepciones)
+- **Depende de:** `users/`, `config/`, `utils/`
 - **Es usado por:** Cualquier cliente que necesite autenticarse
 
 ---
 
-### 5.3 Módulo `config/` (Configuración)
+### 5.3 Módulo `dashboard/` (Estadísticas)
+
+#### Responsabilidad
+Proveer métricas consolidadas sobre el estado del sistema, crecimiento de usuarios y desempeño de programadores.
+
+#### Archivos Incluidos
+
+| Archivo | Tipo | Propósito |
+|---------|------|-----------|
+| `DashboardController.java` | Controller | Endpoints de métricas globales |
+| `DashboardService.java` | Service | Cálculo de estadísticas y reportes |
+| `DashboardSummary.java` | Model | Modelo de dominio para métricas consolidadas |
+| `DashboardMapper.java` | Mapper | Transformación de métricas a DTOs |
+| `DashboardConfigEntity.java`| Entity | Configuración personalizada del dashboard |
+| `DashboardStats.java` | DTO | Resumen estadístico global |
+
+---
+
+### 5.4 Módulo `config/` (Configuración)
 
 #### Responsabilidad
 Configuración transversal del framework Spring Boot: seguridad, CORS, documentación API, y servicios externos.
@@ -595,10 +642,10 @@ FLUJO DE AUTENTICACIÓN:
 
 ---
 
-### 5.4 Módulo `files/` (Archivos)
+### 5.5 Módulo `files/` (Archivos)
 
 #### Responsabilidad
-Gestionar la carga y eliminación de imágenes (perfiles, proyectos) mediante integración con Cloudinary CDN.
+Gestionar la carga, eliminación y persistencia de referencias de imágenes mediante integración con Cloudinary CDN y un registro local de archivos.
 
 #### Archivos Incluidos
 
@@ -606,6 +653,10 @@ Gestionar la carga y eliminación de imágenes (perfiles, proyectos) mediante in
 |---------|------|-----------|
 | `FileController.java` | Controller | Endpoints para upload/delete de imágenes |
 | `CloudinaryService.java` | Service | Integración con SDK de Cloudinary |
+| `FileEntity.java` | Entity | Registro persistente de archivos subidos |
+| `FileModel.java` | Model | Representación de dominio del archivo |
+| `FileMapper.java` | Mapper | Mapeo entre entidades y modelos de archivos |
+| `FileRepository.java` | Repository | Acceso a datos de archivos registrados |
 | `UploadResponseDto.java` | DTO | Respuesta con URL de imagen subida |
 
 #### Entrada/Salida de Datos
@@ -951,6 +1002,17 @@ public class PortafolioBackendApplication {
 | `subirImagenPerfil()` | `/api/files/upload/profile` | POST | Sube imagen de perfil | Requerida |
 | `subirImagenProyecto()` | `/api/files/upload/project` | POST | Sube imagen de proyecto | Requerida |
 | `eliminarImagen()` | `/api/files?publicId=xxx` | DELETE | Elimina imagen | Requerida |
+
+---
+
+#### DashboardController
+
+| Método | Endpoint | HTTP | Descripción | Autenticación |
+|--------|----------|------|-------------|---------------|
+| `getStats()` | `/api/dashboard/stats` | GET | Métricas globales del sistema | Requerida |
+| `getProjectStatsByUser()` | `/api/dashboard/projects-by-user` | GET | Proyectos por usuario | Requerida |
+| `getUserGrowth()` | `/api/dashboard/user-growth` | GET | Crecimiento de usuarios | Requerida |
+| `getAdvisoryHistory()` | `/api/dashboard/advisories-history` | GET | Historial de asesorías | Requerida |
 
 ---
 
@@ -1640,10 +1702,9 @@ Spring Security configura automáticamente:
 | **Repository** | `*Repository.java` | Abstracción de acceso a datos |
 | **Service Layer** | `*Service.java` | Encapsulación de lógica de negocio |
 | **DTO** | `*Dto.java` | Transferencia segura de datos |
-| **Mapper** | `*Mapper.java` | Conversión entre capas |
+| **Mapper** | `*Mapper.java` | Conversión entre capas (desacoplamiento) |
 | **Filter** | `JwtAuthenticationFilter` | Interceptación de peticiones |
-| **Factory Method** | `AuthResponse.UserDTO.fromEntity()` | Creación de objetos |
-| **Builder** | `UploadResponseDto.builder()` | Construcción fluida (Lombok) |
+| **No-Lombok** | Todo el proyecto | Código Java puro para máxima compatibilidad |
 
 ### 13.3 Posibles Mejoras y Deuda Técnica
 
