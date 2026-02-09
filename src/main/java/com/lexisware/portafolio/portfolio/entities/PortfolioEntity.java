@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-// Entidad de portafolio
+// Representación persistente en base de datos de un portafolio de usuario
 @Entity
 @Table(name = "portfolios")
 public class PortfolioEntity {
@@ -17,22 +17,21 @@ public class PortfolioEntity {
     private Long id;
 
     @Column(nullable = false, unique = true, name = "user_id")
-    private String userId; // UID del propietario
+    private String userId; // Identificador UID del propietario
 
-    // Proyectos del portafolio
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectEntity> projects = new ArrayList<>();
 
     @Column(nullable = false)
-    private String title; // Título
+    private String title;
 
     @Column(length = 2000)
-    private String description; // Descripción/Perfil
+    private String description; // Perfil profesional o extracto
 
-    private String theme; // Tema visual
-    private Boolean isPublic = true; // Visibilidad pública
+    private String theme;
+    private Boolean isPublic = true;
 
-    // Habilidades mostradas en el portafolio
+    // Colección de habilidades técnicas asociadas al portafolio
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "portfolio_skills", joinColumns = @JoinColumn(name = "portfolio_id"))
     @Column(name = "skill")
@@ -47,6 +46,7 @@ public class PortfolioEntity {
     public PortfolioEntity() {
     }
 
+    // Inicializa la entidad con todos sus atributos requeridos para la persistencia
     public PortfolioEntity(Long id, String userId, List<ProjectEntity> projects, List<String> skills, String title,
             String description,
             String theme, Boolean isPublic, LocalDateTime createdAt, LocalDateTime updatedAt) {

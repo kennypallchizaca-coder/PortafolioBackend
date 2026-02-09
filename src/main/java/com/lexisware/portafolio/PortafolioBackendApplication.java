@@ -4,11 +4,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-// Aplicación principal del backend LEXISWARE Portafolio - @author: LEXIS-TEAM - @version: 1.0.0
+// Punto de entrada principal y configuración base de la aplicación Spring Boot
 @SpringBootApplication
 @EnableScheduling
 public class PortafolioBackendApplication {
 
+    // Inicia la ejecución del servidor y el contexto de dependencias de Spring
     public static void main(String[] args) {
         SpringApplication.run(PortafolioBackendApplication.class, args);
     }

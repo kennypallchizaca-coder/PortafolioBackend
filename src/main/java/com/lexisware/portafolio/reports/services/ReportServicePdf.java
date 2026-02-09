@@ -20,23 +20,25 @@ import java.util.List;
 import com.lexisware.portafolio.project.repositories.ProjectRepository;
 import com.lexisware.portafolio.project.entities.ProjectEntity;
 
+// Servicio especializado en la generación dinámica de documentos PDF corporativos
 @Service
 public class ReportServicePdf {
 
-    // Paleta Profesional Negro/Gris (Minimalista y Elegante)
-    private static final Color PRIMARY_COLOR = new Color(71, 85, 105); // Gris oscuro (#475569)
-    private static final Color SECONDARY_COLOR = new Color(30, 41, 59); // Gris muy oscuro (#1E293B)
-    private static final Color SUCCESS_COLOR = new Color(34, 197, 94); // Verde (para estados positivos)
-    private static final Color WARNING_COLOR = new Color(245, 158, 11); // Ámbar (para advertencias)
-    private static final Color DANGER_COLOR = new Color(220, 38, 38); // Rojo (para estados negativos)
-    private static final Color HEADER_BG = new Color(15, 23, 42); // Negro azulado (#0F172A)
-    private static final Color SUBTITLE_COLOR = new Color(148, 163, 184); // Gris medio (#94A3B8)
-    private static final Color BORDER_COLOR = new Color(203, 213, 225); // Gris claro para bordes (#CBD5E1)
+    // Paleta de colores profesional para el diseño minimalista de los PDFs
+    private static final Color PRIMARY_COLOR = new Color(71, 85, 105);
+    private static final Color SECONDARY_COLOR = new Color(30, 41, 59);
+    private static final Color SUCCESS_COLOR = new Color(34, 197, 94);
+    private static final Color WARNING_COLOR = new Color(245, 158, 11);
+    private static final Color DANGER_COLOR = new Color(220, 38, 38);
+    private static final Color HEADER_BG = new Color(15, 23, 42);
+    private static final Color SUBTITLE_COLOR = new Color(148, 163, 184);
+    private static final Color BORDER_COLOR = new Color(203, 213, 225);
 
     private final UserRepository userRepository;
     private final AdvisoryRepository advisoryRepository;
     private final ProjectRepository projectRepository;
 
+    // Inyecta los repositorios necesarios para extraer los datos de los reportes
     public ReportServicePdf(UserRepository userRepository, AdvisoryRepository advisoryRepository,
             ProjectRepository projectRepository) {
         this.userRepository = userRepository;
@@ -44,6 +46,7 @@ public class ReportServicePdf {
         this.projectRepository = projectRepository;
     }
 
+    // Genera un documento PDF con el listado de proyectos de un usuario específico
     public ByteArrayInputStream generateUserProjectsPdf(String userUid) {
         Document document = new Document(PageSize.A4, 36, 36, 60, 36);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -52,10 +55,9 @@ public class ReportServicePdf {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Header profesional
+            // Configura el encabezado común para el reporte de proyectos
             addReportHeader(document, "REPORTE DE PROYECTOS");
 
-            // Info del Usuario
             UserEntity user = userRepository.findById(userUid).orElse(null);
             String userName = (user != null) ? user.getDisplayName() : "Usuario Desconocido";
 
@@ -65,7 +67,7 @@ public class ReportServicePdf {
             userInfo.setSpacingAfter(10);
             document.add(userInfo);
 
-            // Tabla mejorada
+            // Estructura la tabla de contenidos para mostrar los detalles del proyecto
             PdfPTable table = new PdfPTable(4);
             table.setWidthPercentage(100);
             table.setWidths(new int[] { 3, 5, 3, 2 });
@@ -114,6 +116,7 @@ public class ReportServicePdf {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
+    // Crea un reporte PDF que lista a todos los programadores activos en el sistema
     public ByteArrayInputStream generateProgrammersPdf() {
         Document document = new Document(PageSize.A4, 36, 36, 60, 36);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -122,10 +125,8 @@ public class ReportServicePdf {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Header profesional
             addReportHeader(document, "REPORTE DE PROGRAMADORES");
 
-            // Tabla mejorada
             PdfPTable table = new PdfPTable(4);
             table.setWidthPercentage(100);
             table.setWidths(new int[] { 3, 4, 3, 2 });
@@ -163,6 +164,8 @@ public class ReportServicePdf {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
+    // Genera un reporte PDF consolidado con el estado de todas las asesorías
+    // programadas
     public ByteArrayInputStream generateAdvisoriesPdf() {
         Document document = new Document(PageSize.A4.rotate(), 36, 36, 60, 36);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -171,10 +174,8 @@ public class ReportServicePdf {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Header profesional
             addReportHeader(document, "REPORTE DE ASESORÍAS");
 
-            // Tabla mejorada
             PdfPTable table = new PdfPTable(6);
             table.setWidthPercentage(100);
             table.setWidths(new int[] { 3, 3, 2, 2, 3, 2 });
@@ -234,8 +235,9 @@ public class ReportServicePdf {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
+    // Agrega los elementos visuales del encabezado (banners, títulos y fechas) al
+    // documento
     private void addReportHeader(Document document, String title) throws DocumentException {
-        // Banner superior con degradado simulado (3 líneas de diferentes tonos)
         PdfPTable bannerTop = new PdfPTable(1);
         bannerTop.setWidthPercentage(100);
         PdfPCell bannerCell1 = new PdfPCell();
@@ -256,21 +258,18 @@ public class ReportServicePdf {
         bannerMid.setSpacingAfter(15);
         document.add(bannerMid);
 
-        // Título principal en VERDE CLARO
         Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 22, PRIMARY_COLOR);
         Paragraph titleParagraph = new Paragraph(title, titleFont);
         titleParagraph.setAlignment(Element.ALIGN_CENTER);
         titleParagraph.setSpacingAfter(8);
         document.add(titleParagraph);
 
-        // Subtítulo con estilo profesional
         Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, SUBTITLE_COLOR);
         Paragraph subtitle = new Paragraph("LEXISWARE - Sistema de Gestión de Portafolios", subtitleFont);
         subtitle.setAlignment(Element.ALIGN_CENTER);
         subtitle.setSpacingAfter(5);
         document.add(subtitle);
 
-        // Fecha de generación con formato mejorado
         String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
         Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Font.ITALIC, new Color(100, 116, 139));
         Paragraph dateParagraph = new Paragraph("📄 Generado el: " + currentDate, dateFont);
@@ -278,7 +277,6 @@ public class ReportServicePdf {
         dateParagraph.setSpacingAfter(15);
         document.add(dateParagraph);
 
-        // Línea separadora doble (efecto profesional)
         PdfPTable line1 = new PdfPTable(1);
         line1.setWidthPercentage(100);
         PdfPCell lineCell1 = new PdfPCell();
@@ -300,6 +298,7 @@ public class ReportServicePdf {
         document.add(line2);
     }
 
+    // Configura el estilo visual de las celdas de encabezado de las tablas
     private void addStyledTableHeader(PdfPTable table, String headerTitle) {
         PdfPCell header = new PdfPCell();
         header.setBackgroundColor(HEADER_BG);
@@ -312,6 +311,7 @@ public class ReportServicePdf {
         table.addCell(header);
     }
 
+    // Configura el estilo visual y bordes de las celdas de datos en las tablas
     private void addStyledCell(PdfPTable table, String content) {
         PdfPCell cell = new PdfPCell(new Phrase(content,
                 FontFactory.getFont(FontFactory.HELVETICA, 9, Color.DARK_GRAY)));
@@ -321,8 +321,8 @@ public class ReportServicePdf {
         table.addCell(cell);
     }
 
+    // Agrega el resumen de totales al final del documento PDF
     private void addFooter(Document document, int totalRecords) throws DocumentException {
-        // Resumen al final
         Font footerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, SECONDARY_COLOR);
         Paragraph footer = new Paragraph("\nTotal de registros: " + totalRecords, footerFont);
         footer.setAlignment(Element.ALIGN_RIGHT);

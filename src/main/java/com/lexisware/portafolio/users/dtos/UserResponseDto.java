@@ -5,7 +5,7 @@ import com.lexisware.portafolio.users.entities.UserEntity;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// DTO de respuesta de usuario
+// Estructura de datos para enviar información detallada de usuario a la UI
 public class UserResponseDto {
 
     private String uid;
@@ -19,7 +19,7 @@ public class UserResponseDto {
     private List<String> skills;
     private List<String> schedule;
 
-    // Redes sociales
+    // Identificadores y enlaces a perfiles externos del usuario
     private String github;
     private String instagram;
     private String whatsapp;
@@ -30,6 +30,8 @@ public class UserResponseDto {
     public UserResponseDto() {
     }
 
+    // Inicializa el DTO con la información personal, profesional y de autoría del
+    // usuario
     public UserResponseDto(String uid, String email, String displayName, UserEntity.Role role, String specialty,
             String bio, String photoURL, Boolean available, List<String> skills, List<String> schedule, String github,
             String instagram, String whatsapp, LocalDateTime createdAt, LocalDateTime updatedAt) {

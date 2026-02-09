@@ -2,40 +2,42 @@ package com.lexisware.portafolio.advisory.dtos;
 
 import jakarta.validation.constraints.*;
 
-// DTO de solicitud de asesoría
+// DTO para manejar la solicitud de creación de una nueva asesoría
 public class AdvisoryRequestDto {
 
     @NotBlank(message = "El ID del programador es obligatorio")
-    private String programmerId;
+    private String programmerId; // Identificador único del programador
 
     @NotBlank(message = "El email del programador es obligatorio")
     @Email(message = "El email del programador debe ser válido")
-    private String programmerEmail;
+    private String programmerEmail; // Correo electrónico del programador
 
     @NotBlank(message = "El nombre del programador es obligatorio")
-    private String programmerName;
+    private String programmerName; // Nombre del programador
 
     @NotBlank(message = "El nombre del solicitante es obligatorio")
-    private String requesterName;
+    private String requesterName; // Nombre de la persona que solicita la asesoría
 
     @NotBlank(message = "El email del solicitante es obligatorio")
     @Email(message = "El email del solicitante debe ser válido")
-    private String requesterEmail;
+    private String requesterEmail; // Correo electrónico del solicitante
 
     @NotBlank(message = "La fecha de la asesoría es obligatoria")
     @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "La fecha debe tener formato YYYY-MM-DD")
-    private String date;
+    private String date; // Fecha programada para la asesoría
 
     @NotBlank(message = "La hora de la asesoría es obligatoria")
     @Pattern(regexp = "\\d{2}:\\d{2}", message = "La hora debe tener formato HH:MM")
-    private String time;
+    private String time; // Hora programada para la asesoría
 
     @Size(max = 1000, message = "La nota no puede exceder 1000 caracteres")
-    private String note;
+    private String note; // Notas o descripción adicional de la solicitud
 
+    // Constructor vacío por defecto
     public AdvisoryRequestDto() {
     }
 
+    // Constructor con todos los campos para inicialización completa
     public AdvisoryRequestDto(String programmerId, String programmerEmail, String programmerName, String requesterName,
             String requesterEmail, String date, String time, String note) {
         this.programmerId = programmerId;

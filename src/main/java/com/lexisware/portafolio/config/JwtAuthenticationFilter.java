@@ -17,7 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
-// Filtro de validación JWT
+// Filtro que intercepta cada petición para validar el token JWT
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -29,23 +29,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.tokenProvider = tokenProvider;
     }
 
+    // Extrae, valida el token y establece la autenticación en el contexto de
+    // seguridad
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            // Extrae token de cabecera
             String jwt = obtenerJwtDeRequest(request);
 
-            // Valida token
             if (StringUtils.hasText(jwt) && tokenProvider.validarToken(jwt)) {
                 String userId = tokenProvider.getUserIdFromJWT(jwt);
                 String userRole = tokenProvider.getUserRoleFromJWT(jwt);
                 String userEmail = tokenProvider.getUserEmailFromJWT(jwt);
 
-                // Crea autoridad según rol
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userRole);
 
-                // Establece contexto seguridad
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userId, userEmail, Collections.singletonList(authority));
 
@@ -57,11 +55,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("No se pudo establecer la autenticación del usuario en el contexto de seguridad", ex);
         }
 
-        // Continuar con la cadena de filtros
         filterChain.doFilter(request, response);
     }
 
-    // Extrae JWT de request
+    // Recupera el token JWT limpio de la cabecera Authorization
     private String obtenerJwtDeRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {

@@ -3,11 +3,11 @@ package com.lexisware.portafolio.users.models;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// Modelo de Dominio de Usuario (Agnóstico de persistencia)
+// Modelo de dominio que representa los atributos y lógica de negocio de un Usuario
 public class User {
     private String uid;
     private String email;
-    private String password; // Solo para uso interno del servicio
+    private String password; // Credencial de acceso para validaciones internas
     private String displayName;
     private Role role;
     private String specialty;
@@ -17,7 +17,7 @@ public class User {
     private List<String> skills;
     private List<String> schedule;
 
-    // Redes sociales
+    // Referencias a perfiles externos del usuario
     private String github;
     private String instagram;
     private String whatsapp;
@@ -25,6 +25,7 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Perfiles y niveles de autorización dentro de la plataforma
     public enum Role {
         PROGRAMMER,
         ADMIN,
@@ -34,6 +35,8 @@ public class User {
     public User() {
     }
 
+    // Inicializa el modelo de dominio con la información personal, laboral y
+    // técnica
     public User(String uid, String email, String password, String displayName, Role role, String specialty, String bio,
             String photoURL, Boolean available, List<String> skills, List<String> schedule, String github,
             String instagram, String whatsapp, LocalDateTime createdAt, LocalDateTime updatedAt) {

@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// Servicio simplificado para gestión de usuarios
+// Implementación de la lógica de negocio para la administración de usuarios y perfiles
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -21,27 +21,29 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
+    // Inicializa el servicio inyectando repositorios y componentes de seguridad
     public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Obtiene listado de programadores
+    // Obtiene el catálogo completo de usuarios registrados como programadores
     @Override
     @Transactional(readOnly = true)
     public List<User> obtenerProgramadores() {
         return userMapper.toModelList(userRepository.findByRole(UserEntity.Role.PROGRAMMER));
     }
 
-    // Obtiene programadores disponibles
+    // Recupera únicamente aquellos programadores que marcaron su estado como
+    // disponible
     @Override
     @Transactional(readOnly = true)
     public List<User> obtenerProgramadoresDisponibles() {
         return userMapper.toModelList(userRepository.findByRole(UserEntity.Role.PROGRAMMER));
     }
 
-    // Busca usuario por UID
+    // Busca la información técnica de un usuario por su UID único en el sistema
     @Override
     @Transactional(readOnly = true)
     public User obtenerUsuarioPorId(String uid) {
@@ -50,14 +52,14 @@ public class UserServiceImpl implements UserService {
         return userMapper.toModel(entity);
     }
 
-    // Crea o actualiza usuario (Lógica centralizada)
+    // Gestiona el ciclo de vida del usuario aplicando validaciones de seguridad y
+    // consistencia
     @Override
     @Transactional
     public User crearOActualizarUsuario(User userModel) {
-        // Flujo: Buscar -> Preservar datos valiosos -> Guardar
         userRepository.findById(userModel.getUid()).ifPresentOrElse(
                 existing -> {
-                    // Mantener contraseña si no viene nueva o es igual a la actual (ya encriptada)
+                    // Preserva la clave encriptada si no se proporciona una actualización
                     if (userModel.getPassword() != null && !userModel.getPassword().isEmpty()
                             && !userModel.getPassword().equals(existing.getPassword())) {
                         userModel.setPassword(passwordEncoder.encode(userModel.getPassword()));
@@ -65,12 +67,12 @@ public class UserServiceImpl implements UserService {
                         userModel.setPassword(existing.getPassword());
                     }
 
-                    // Mantener fecha de creación
+                    // Mantiene la fecha de registro original del usuario
                     if (userModel.getCreatedAt() == null) {
                         userModel.setCreatedAt(existing.getCreatedAt());
                     }
 
-                    // Mantener foto si la nueva es vacía (prevención de borrado accidental)
+                    // Protege la URL de la foto para evitar sobreescrituras accidentales
                     if (userModel.getPhotoURL() == null || userModel.getPhotoURL().trim().isEmpty()) {
                         userModel.setPhotoURL(existing.getPhotoURL());
                     }
@@ -78,7 +80,7 @@ public class UserServiceImpl implements UserService {
                     userModel.setUpdatedAt(LocalDateTime.now());
                 },
                 () -> {
-                    // Nuevo usuario: Asignar clave por defecto si falta
+                    // Establece credenciales iniciales por defecto para nuevos usuarios
                     if (userModel.getPassword() == null || userModel.getPassword().isEmpty()) {
                         userModel.setPassword(passwordEncoder.encode("123456"));
                     } else {
@@ -92,11 +94,8 @@ public class UserServiceImpl implements UserService {
         return userMapper.toModel(saved);
     }
 
-    // NOTA: El método 'actualizarUsuario' (parcial) se eliminó por no ser utlizado.
-    // El controlador maneja la actualización parcial mapeando el DTO al modelo y
-    // llamando a crearOActualizarUsuario.
-
-    // Actualiza disponibilidad
+    // Modifica específicamente el estado de disponibilidad del usuario para
+    // mentorías
     @Override
     @Transactional
     public User actualizarDisponibilidad(String uid, boolean available) {
@@ -108,7 +107,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toModel(saved);
     }
 
-    // Elimina usuario por ID
+    // Elimina el registro del usuario verificando previamente su existencia
     @Override
     @Transactional
     public void eliminarUsuario(String uid) {

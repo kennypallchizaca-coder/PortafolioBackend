@@ -4,24 +4,26 @@ import com.lexisware.portafolio.advisory.entities.AdvisoryEntity;
 
 import java.time.LocalDateTime;
 
-// DTO de respuesta asesoría
+// DTO que representa la respuesta con los datos de una asesoría
 public class AdvisoryResponseDto {
 
-    private Long id;
-    private String programmerId;
-    private String programmerEmail;
-    private String programmerName;
-    private String requesterName;
-    private String requesterEmail;
-    private String date;
-    private String time;
-    private String note;
-    private AdvisoryEntity.Status status;
-    private LocalDateTime createdAt;
+    private Long id; // Identificador de la asesoría
+    private String programmerId; // Identificador del programador asignado
+    private String programmerEmail; // Email del programador
+    private String programmerName; // Nombre del programador
+    private String requesterName; // Nombre del solicitante
+    private String requesterEmail; // Email del solicitante
+    private String date; // Fecha de la sesión
+    private String time; // Hora de la sesión
+    private String note; // Nota adicional
+    private AdvisoryEntity.Status status; // Estado actual de la asesoría
+    private LocalDateTime createdAt; // Fecha de creación del registro
 
+    // Constructor vacío por defecto
     public AdvisoryResponseDto() {
     }
 
+    // Constructor con todos los campos para instanciar la respuesta completa
     public AdvisoryResponseDto(Long id, String programmerId, String programmerEmail, String programmerName,
             String requesterName, String requesterEmail, String date, String time, String note,
             AdvisoryEntity.Status status, LocalDateTime createdAt) {

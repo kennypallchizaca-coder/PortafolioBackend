@@ -17,7 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// Servicio de gestión de asesorías y notificaciones
+// Implementación del servicio de gestión de asesorías
 @Service
 public class AdvisoryServiceImpl implements AdvisoryService {
 
@@ -27,6 +27,7 @@ public class AdvisoryServiceImpl implements AdvisoryService {
     private final AdvisoryMapper advisoryMapper;
     private final EmailService emailService;
 
+    // Inyecta dependencias requeridas
     public AdvisoryServiceImpl(AdvisoryRepository advisoryRepository, AdvisoryMapper advisoryMapper,
             EmailService emailService) {
         this.advisoryRepository = advisoryRepository;
@@ -34,14 +35,14 @@ public class AdvisoryServiceImpl implements AdvisoryService {
         this.emailService = emailService;
     }
 
-    // Obtiene todas las asesorías paginadas
+    // Obtiene todas las asesorías paginadas desde el repositorio
     @Override
     public Page<Advisory> obtenerTodasLasAsesorias(Pageable pageable) {
         return advisoryRepository.findAll(pageable)
                 .map(advisoryMapper::toModel);
     }
 
-    // Busca asesoría por ID
+    // Busca una asesoría por su ID, lanza excepción si no existe
     @Override
     public Advisory obtenerAsesoriaPorId(Long id) {
         AdvisoryEntity entity = advisoryRepository.findById(id)
@@ -49,38 +50,38 @@ public class AdvisoryServiceImpl implements AdvisoryService {
         return advisoryMapper.toModel(entity);
     }
 
-    // Obtiene asesorías por programador
+    // Obtiene las asesorías asignadas a un programador específico
     @Override
     public Page<Advisory> obtenerAsesoriasPorProgramador(String programmerId, Pageable pageable) {
         return advisoryRepository.findByProgrammerId(programmerId, pageable)
                 .map(advisoryMapper::toModel);
     }
 
-    // Busca asesorías por email del solicitante
+    // Busca las asesorías solicitadas por un email específico
     @Override
     public Page<Advisory> obtenerAsesoriasPorSolicitante(String email, Pageable pageable) {
         return advisoryRepository.findByRequesterEmail(email, pageable)
                 .map(advisoryMapper::toModel);
     }
 
-    // Filtra asesorías por estado
+    // Filtra las asesorías por su estado actual
     @Override
     public Page<Advisory> obtenerAsesoriasPorEstado(AdvisoryEntity.Status status, Pageable pageable) {
         return advisoryRepository.findByStatus(status, pageable)
                 .map(advisoryMapper::toModel);
     }
 
-    // Crea asesoría y envía notificaciones
+    // Crea una nueva asesoría y notifica por email a las partes
     @Override
     @Transactional
     public Advisory crearAsesoria(Advisory advisoryModel) {
-        // Estado inicial
+        // Establece el estado inicial como pendiente
         advisoryModel.setStatus(Advisory.Status.pending);
 
         AdvisoryEntity entity = advisoryMapper.toEntity(advisoryModel);
         AdvisoryEntity savedAdvisory = advisoryRepository.save(entity);
 
-        // Notifica al programador
+        // Intenta notificar al programador sobre la nueva solicitud
         try {
             emailService.sendAdvisoryNotificationToProgrammer(
                     savedAdvisory.getProgrammerEmail(),
@@ -93,7 +94,7 @@ public class AdvisoryServiceImpl implements AdvisoryService {
             log.error("Error al enviar email informativo al programador: {}", e.getMessage());
         }
 
-        // Notifica al solicitante
+        // Intenta enviar confirmación al solicitante
         try {
             emailService.sendAdvisoryConfirmationToRequester(
                     savedAdvisory.getRequesterEmail(),
@@ -108,7 +109,7 @@ public class AdvisoryServiceImpl implements AdvisoryService {
         return advisoryMapper.toModel(savedAdvisory);
     }
 
-    // Valida permisos de gestión
+    // Verifica si el usuario tiene permisos para modificar la asesoría
     private void validarPropiedad(AdvisoryEntity advisory, String appUserUid) {
         boolean isAdmin = SecurityContextHolder.getContext()
                 .getAuthentication()
@@ -123,22 +124,22 @@ public class AdvisoryServiceImpl implements AdvisoryService {
                 "No tienes permisos para gestionar esta asesoría");
     }
 
-    // Actualiza estado y notifica
+    // Actualiza el estado de una asesoría y notifica al solicitante
     @Override
     @Transactional
     public Advisory actualizarEstadoAsesoria(Long id, Advisory.Status status, String requestUserUid) {
         AdvisoryEntity entity = advisoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Asesoría", "id", id));
 
-        // Valida permisos
+        // Valida que el usuario tenga permisos
         validarPropiedad(entity, requestUserUid);
 
-        // Actualiza estado
+        // Actualiza el estado
         entity.setStatus(AdvisoryEntity.Status.valueOf(status.name()));
 
         AdvisoryEntity updatedAdvisory = advisoryRepository.save(entity);
 
-        // Notifica al solicitante
+        // Notifica al solicitante sobre el cambio de estado
         try {
             emailService.sendAdvisoryStatusUpdate(
                     updatedAdvisory.getRequesterEmail(),
@@ -152,34 +153,34 @@ public class AdvisoryServiceImpl implements AdvisoryService {
         return advisoryMapper.toModel(updatedAdvisory);
     }
 
-    // Aprueba asesoría
+    // Aprueba una asesoría existente
     @Override
     @Transactional
     public Advisory aprobarAsesoria(Long id, String requestUserUid) {
         return actualizarEstadoAsesoria(id, Advisory.Status.approved, requestUserUid);
     }
 
-    // Rechaza asesoría
+    // Rechaza una asesoría existente
     @Override
     @Transactional
     public Advisory rechazarAsesoria(Long id, String requestUserUid) {
         return actualizarEstadoAsesoria(id, Advisory.Status.rejected, requestUserUid);
     }
 
-    // Elimina asesoría por ID
+    // Elimina una asesoría del sistema
     @Override
     @Transactional
     public void eliminarAsesoria(Long id, String requestUserUid) {
         AdvisoryEntity entity = advisoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Asesoría", "id", id));
 
-        // Valida permisos
+        // Valida permisos antes de eliminar
         validarPropiedad(entity, requestUserUid);
 
         advisoryRepository.deleteById(id);
     }
 
-    // Elimina historial de asesorías (completadas)
+    // Elimina el historial de asesorías completadas o rechazadas de un programador
     @Override
     @Transactional
     public void eliminarHistorial(String programmerUid) {
@@ -188,12 +189,12 @@ public class AdvisoryServiceImpl implements AdvisoryService {
                 java.util.List.of(AdvisoryEntity.Status.approved, AdvisoryEntity.Status.rejected));
     }
 
-    // Elimina historial de asesorías de solicitante (completadas)
+    // Elimina el historial de asesorías completadas o rechazadas de un solicitante
     @Override
     @Transactional
-    public void eliminarHistorialSolicitante(String requesterEmail) {
+    public void eliminarHistorialSolicitante(String email) {
         advisoryRepository.deleteByRequesterEmailAndStatusIn(
-                requesterEmail,
+                email,
                 java.util.List.of(AdvisoryEntity.Status.approved, AdvisoryEntity.Status.rejected));
     }
 }

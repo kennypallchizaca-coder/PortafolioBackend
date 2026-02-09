@@ -1,12 +1,14 @@
 package com.lexisware.portafolio.dashboard.dtos;
 
+// DTO genérico para representar conteos estadísticos con una etiqueta
 public class AdvisoryStatsDto {
-    private String label; // Etiqueta (mes/año o nombre)
-    private Long count;
+    private String label; // Etiqueta descriptiva (ej. mes o nombre)
+    private Long count; // Cantidad total asociada
 
     public AdvisoryStatsDto() {
     }
 
+    // Inicializa el DTO con una etiqueta y su correspondiente conteo
     public AdvisoryStatsDto(String label, Long count) {
         this.label = label;
         this.count = count;

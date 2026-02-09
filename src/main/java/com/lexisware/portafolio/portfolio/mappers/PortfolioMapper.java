@@ -13,15 +13,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// Clase para el mapeo de datos relacionados con Portafolios
+// Mapper encargado de transformar datos de portafolio entre DTOs, modelos y entidades
 @Component
 public class PortfolioMapper {
 
     @Autowired
-    @Lazy // Carga perezosa para evitar dependencias circulares con ProjectMapper
+    @Lazy // Evita la dependencia circular con ProjectMapper durante la inicialización
     private ProjectMapper projectMapper;
 
-    // Transforma una entidad JPA a un modelo de negocio de Portafolio
+    // Convierte una entidad JPA de persistencia a un modelo de negocio de
+    // portafolio
     public Portfolio toModel(PortfolioEntity entity) {
         if (entity == null)
             return null;
@@ -37,7 +38,7 @@ public class PortfolioMapper {
         model.setCreatedAt(entity.getCreatedAt());
         model.setUpdatedAt(entity.getUpdatedAt());
 
-        // Mapear lista de proyectos
+        // Mapea recursivamente la lista de proyectos internos
         if (entity.getProjects() != null) {
             model.setProjects(projectMapper.toModelList(entity.getProjects()));
         } else {
@@ -47,7 +48,7 @@ public class PortfolioMapper {
         return model;
     }
 
-    // Convierte un modelo de negocio a una entidad JPA para persistencia
+    // Transforma un modelo de negocio a una entidad JPA para su almacenamiento
     public PortfolioEntity toEntity(Portfolio model) {
         if (model == null)
             return null;
@@ -67,7 +68,7 @@ public class PortfolioMapper {
         return entity;
     }
 
-    // Transforma un DTO de creación a un modelo de negocio
+    // Mapea los datos de una solicitud DTO a un modelo de negocio inicial
     public Portfolio toModel(PortfolioRequestDto dto) {
         if (dto == null)
             return null;
@@ -82,7 +83,8 @@ public class PortfolioMapper {
         return model;
     }
 
-    // Actualiza campos específicos de un modelo de portafolio desde un DTO
+    // Actualiza el estado de un modelo existente a partir de los campos presentes
+    // en el DTO
     public void updateModel(Portfolio model, PortfolioRequestDto dto) {
         if (dto.getTitle() != null)
             model.setTitle(dto.getTitle());
@@ -96,7 +98,7 @@ public class PortfolioMapper {
             model.setSkills(dto.getSkills());
     }
 
-    // Convierte un modelo de negocio a un DTO de respuesta para la API
+    // Prepara un objeto DTO de respuesta para ser enviado a través de la API
     public PortfolioResponseDto toResponseDto(Portfolio model) {
         if (model == null)
             return null;
@@ -112,6 +114,7 @@ public class PortfolioMapper {
         dto.setCreatedAt(model.getCreatedAt());
         dto.setUpdatedAt(model.getUpdatedAt());
 
+        // Mapea la lista de proyectos al formato de respuesta DTO
         if (model.getProjects() != null) {
             dto.setProjects(projectMapper.toResponseDtoList(model.getProjects()));
         } else {
@@ -121,14 +124,14 @@ public class PortfolioMapper {
         return dto;
     }
 
-    // Convierte una lista de modelos a una lista de DTOs
+    // Convierte una colección de modelos en una lista de DTOs de respuesta
     public List<PortfolioResponseDto> toResponseDtoList(List<Portfolio> models) {
         return models.stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    // Convierte una lista de entidades JPA a una lista de modelos de negocio
+    // Convierte una colección de entidades JPA en una lista de modelos de negocio
     public List<Portfolio> toModelList(List<PortfolioEntity> entities) {
         return entities.stream()
                 .map(this::toModel)

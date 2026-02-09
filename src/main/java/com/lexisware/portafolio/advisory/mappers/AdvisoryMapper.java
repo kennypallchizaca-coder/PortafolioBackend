@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// Clase para el mapeo de datos relacionados con Asesorías
+// Mapper encargado de transformar objetos entre Entidades, Modelos y DTOs
 @Component
 public class AdvisoryMapper {
 
-    // Convierte una entidad de base de datos a un modelo de negocio de Asesoría
+    // Convierte una entidad JPA a un modelo de negocio interno
     public Advisory toModel(AdvisoryEntity entity) {
         if (entity == null)
             return null;
@@ -59,7 +59,7 @@ public class AdvisoryMapper {
         return entity;
     }
 
-    // Transforma un DTO de solicitud a un modelo de negocio
+    // Transforma un DTO de solicitud entrante a un modelo de negocio
     public Advisory toModel(AdvisoryRequestDto dto) {
         if (dto == null)
             return null;
@@ -75,7 +75,7 @@ public class AdvisoryMapper {
         return model;
     }
 
-    // Transforma un modelo de negocio a un DTO de respuesta para la API
+    // Transforma un modelo de negocio a un DTO de respuesta para el cliente
     public AdvisoryResponseDto toResponseDto(Advisory model) {
         if (model == null)
             return null;

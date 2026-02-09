@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-// Proveedor de tokens JWT
+// Componente utilitario para generar y validar tokens JWT
 @Component
 public class JwtTokenProvider {
 
@@ -22,12 +22,12 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long jwtExpirationInMs;
 
-    // Genera clave firma
+    // Genera la clave criptográfica para firmar los tokens
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    // Genera token
+    // Crea un nuevo token JWT con los claims del usuario y fecha de expiración
     public String generarToken(String userId, String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
@@ -45,7 +45,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // Obtiene ID usuario
+    // Extrae el ID del usuario desde el payload del token
     public String getUserIdFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -56,7 +56,7 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    // Extrae email
+    // Obtiene el email del usuario desde los claims del token
     public String getUserEmailFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -67,7 +67,7 @@ public class JwtTokenProvider {
         return claims.get("email", String.class);
     }
 
-    // Extrae rol
+    // Obtiene el rol del usuario desde los claims del token
     public String getUserRoleFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -78,7 +78,7 @@ public class JwtTokenProvider {
         return claims.get("role", String.class);
     }
 
-    // Valida token
+    // Verifica la firma y validez temporal del token JWT
     public boolean validarToken(String authToken) {
         try {
             Jwts.parser()

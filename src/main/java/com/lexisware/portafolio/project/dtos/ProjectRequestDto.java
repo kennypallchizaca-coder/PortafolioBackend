@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 
 import java.util.List;
 
-// DTO de solicitud de proyecto
+// DTO para la creación y actualización de proyectos técnicos
 public class ProjectRequestDto {
 
     @NotBlank(message = "El título del proyecto es obligatorio")
@@ -31,14 +31,13 @@ public class ProjectRequestDto {
     private String demoUrl;
 
     private String imageUrl;
-
     private String ownerUid;
-
     private Long portfolioId;
 
     public ProjectRequestDto() {
     }
 
+    // Inicializa el DTO con toda la información necesaria para procesar un proyecto
     public ProjectRequestDto(String title, String description, ProjectEntity.Category category,
             ProjectEntity.ProjectRole role, List<String> techStack, String repoUrl, String demoUrl, String imageUrl,
             String ownerUid, Long portfolioId) {

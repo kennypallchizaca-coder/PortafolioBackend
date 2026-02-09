@@ -2,8 +2,7 @@ package com.lexisware.portafolio.portfolio.dtos;
 
 import jakarta.validation.constraints.*;
 
-// DTO de solicitud de portafolio
-// DTO de solicitud de portafolio
+// DTO para la creación o actualización de los datos básicos de un portafolio
 public class PortfolioRequestDto {
 
     @NotBlank(message = "El ID del usuario es obligatorio")
@@ -17,14 +16,13 @@ public class PortfolioRequestDto {
     private String description;
 
     private String theme;
-
     private Boolean isPublic = true;
-
     private java.util.List<String> skills;
 
     public PortfolioRequestDto() {
     }
 
+    // Inicializa el DTO con los campos fundamentales del portafolio
     public PortfolioRequestDto(String userId, String title, String description, String theme, Boolean isPublic,
             java.util.List<String> skills) {
         this.userId = userId;

@@ -12,16 +12,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
 
+// Controlador para la descarga de reportes administrativos en formato PDF
 @RestController
 @RequestMapping("/api/reports")
 public class ReportPdfController {
 
     private final ReportServicePdf reportServicePdf;
 
+    // Inicializa el controlador con el servicio de generación de PDFs
     public ReportPdfController(ReportServicePdf reportServicePdf) {
         this.reportServicePdf = reportServicePdf;
     }
 
+    // Genera y descarga un reporte PDF con la lista de todos los programadores
     @GetMapping("/programmers/pdf")
     @SuppressWarnings("null")
     public ResponseEntity<InputStreamResource> downloadProgrammersReport() {
@@ -37,6 +40,7 @@ public class ReportPdfController {
                 .body(new InputStreamResource(bis));
     }
 
+    // Genera y descarga un reporte PDF con el historial de todas las asesorías
     @GetMapping("/advisories/pdf")
     public ResponseEntity<InputStreamResource> downloadAdvisoriesReport() {
         ByteArrayInputStream bis = reportServicePdf.generateAdvisoriesPdf();
@@ -51,6 +55,7 @@ public class ReportPdfController {
                 .body(new InputStreamResource(bis));
     }
 
+    // Genera y descarga un reporte PDF con los proyectos de un usuario específico
     @GetMapping("/projects/{uid}/pdf")
     public ResponseEntity<InputStreamResource> downloadUserProjectsReport(
             @PathVariable("uid") String uid) {

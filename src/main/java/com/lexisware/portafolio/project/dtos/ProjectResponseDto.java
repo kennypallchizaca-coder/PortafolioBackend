@@ -5,7 +5,7 @@ import com.lexisware.portafolio.project.entities.ProjectEntity;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// DTO de respuesta de proyecto
+// DTO que contiene la información pública de un proyecto para la visualización en la API
 public class ProjectResponseDto {
 
     private Long id;
@@ -19,13 +19,13 @@ public class ProjectResponseDto {
     private String imageUrl;
     private String programmerName;
     private LocalDateTime createdAt;
-
-    // Info. reducida del propietario
     private OwnerDto owner;
 
     public ProjectResponseDto() {
     }
 
+    // Inicializa el DTO con los detalles completos del proyecto y la información
+    // del autor
     public ProjectResponseDto(Long id, String title, String description, ProjectEntity.Category category,
             ProjectEntity.ProjectRole role, List<String> techStack, String repoUrl, String demoUrl, String imageUrl,
             String programmerName, LocalDateTime createdAt, OwnerDto owner) {
@@ -139,6 +139,8 @@ public class ProjectResponseDto {
         this.owner = owner;
     }
 
+    // Información simplificada del propietario necesaria para la interfaz de
+    // usuario
     public static class OwnerDto {
         private String uid;
         private String displayName;

@@ -15,9 +15,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+// Componente para la captura y gestión centralizada de excepciones en toda la aplicación
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Captura errores cuando no se encuentra un recurso específico en la base de
+    // datos
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
@@ -27,6 +30,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
+    // Gestiona situaciones donde el usuario carece de autoridación o permisos
+    // necesarios
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<?> handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
@@ -36,6 +41,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
     }
 
+    // Procesa excepciones genéricas de la lógica de aplicación con estados HTTP
+    // dinámicos
     @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<?> handleApplicationException(ApplicationException ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
@@ -45,6 +52,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, ex.getStatus());
     }
 
+    // Formatea y retorna los errores de validación de campos detectados en los DTOs
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -56,6 +64,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
+    // Captura cualquier otra excepción no controlada para evitar fugas de
+    // información técnica
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();

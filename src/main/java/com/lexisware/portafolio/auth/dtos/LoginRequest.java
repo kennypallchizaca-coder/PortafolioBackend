@@ -3,7 +3,7 @@ package com.lexisware.portafolio.auth.dtos;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-// DTO de credenciales login
+// DTO que encapsula las credenciales para el inicio de sesión
 public class LoginRequest {
 
     @NotBlank(message = "El email es obligatorio")

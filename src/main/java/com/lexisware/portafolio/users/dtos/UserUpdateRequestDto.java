@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 
 import java.util.List;
 
-// DTO de actualización de usuario
+// Objeto de transferencia utilizado para actualizar campos específicos del perfil de usuario
 public class UserUpdateRequestDto {
 
     @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
@@ -24,7 +24,7 @@ public class UserUpdateRequestDto {
 
     private Boolean available;
 
-    // Redes sociales
+    // Enlaces opcionales a perfiles y redes sociales externos
     @Pattern(regexp = "^(https?://)?.*", message = "La URL debe ser válida")
     private String github;
 
@@ -37,6 +37,8 @@ public class UserUpdateRequestDto {
     public UserUpdateRequestDto() {
     }
 
+    // Inicializa el DTO de actualización con los nuevos datos profesionales y de
+    // contacto
     public UserUpdateRequestDto(String displayName, String bio, String specialty, String photoURL, List<String> skills,
             List<String> schedule, Boolean available, String github, String instagram, String whatsapp) {
         this.displayName = displayName;

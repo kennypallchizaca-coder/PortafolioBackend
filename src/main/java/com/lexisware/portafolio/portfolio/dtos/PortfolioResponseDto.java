@@ -2,8 +2,7 @@ package com.lexisware.portafolio.portfolio.dtos;
 
 import java.time.LocalDateTime;
 
-// DTO de respuesta portafolio
-// DTO de respuesta portafolio
+// DTO que representa un portafolio completo incluyendo sus proyectos y habilidades para la API
 public class PortfolioResponseDto {
 
     private Long id;
@@ -20,6 +19,8 @@ public class PortfolioResponseDto {
     public PortfolioResponseDto() {
     }
 
+    // Inicializa el DTO de respuesta con toda la información detallada del
+    // portafolio
     public PortfolioResponseDto(Long id, String userId, String title, String description, String theme,
             Boolean isPublic, LocalDateTime createdAt, LocalDateTime updatedAt,
             java.util.List<com.lexisware.portafolio.project.dtos.ProjectResponseDto> projects,

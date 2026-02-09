@@ -10,26 +10,27 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-// Repositorio de usuarios
+// Interfaz para la manipulación persistente de usuarios mediante Spring Data JPA
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
 
-    // Busca usuario por email
+    // Localiza un usuario por su dirección de correo electrónico única
     Optional<UserEntity> findByEmail(String email);
 
-    // Busca usuarios por rol
+    // Lista todos los usuarios que poseen un rol de acceso específico
     List<UserEntity> findByRole(UserEntity.Role role);
 
-    // Busca programadores disponibles
+    // Recupera programadores que han activado su estado de disponibilidad
     List<UserEntity> findByAvailableTrue();
 
-    // Busca programadores disponibles por rol
+    // Filtra usuarios disponibles que además coinciden con un rol específico
     List<UserEntity> findByRoleAndAvailableTrue(UserEntity.Role role);
 
-    // Cuenta usuarios por rol
+    // Retorna la cantidad total de usuarios registrados bajo un rol determinado
     long countByRole(UserEntity.Role role);
 
-    // Estadísticas: Crecimiento usuarios/mes
+    // Consulta personalizada para obtener estadísticas de registro mensual de
+    // usuarios
     @Query("SELECT new com.lexisware.portafolio.dashboard.dtos.UserGrowthStats(CAST(EXTRACT(MONTH FROM u.createdAt) AS int), CAST(EXTRACT(YEAR FROM u.createdAt) AS int), COUNT(u)) FROM UserEntity u GROUP BY EXTRACT(YEAR FROM u.createdAt), EXTRACT(MONTH FROM u.createdAt) ORDER BY EXTRACT(YEAR FROM u.createdAt), EXTRACT(MONTH FROM u.createdAt)")
     List<UserGrowthStats> countUsersByGrowth();
 }

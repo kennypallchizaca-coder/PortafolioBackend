@@ -15,26 +15,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
-// Servicio de gestión de proyectos
+// Implementación de la lógica de negocio para la gestión de ciclo de vida de proyectos
 @Service
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final ProjectMapper projectMapper;
 
+    // Inicializa el servicio inyectando el repositorio de datos y el conversor de
+    // objetos
     public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
     }
 
-    // Obtiene todos los proyectos paginados
+    // Retorna una página de proyectos transformados a modelos de dominio
     @Override
     public Page<Project> obtenerTodosLosProyectos(Pageable pageable) {
         return projectRepository.findAll(pageable)
                 .map(projectMapper::toModel);
     }
 
-    // Retorna lista completa de proyectos
+    // Recupera la totalidad de proyectos registrados en la base de datos
     @Override
     public List<Project> obtenerTodosLosProyectos() {
         return projectRepository.findAll().stream()
@@ -42,7 +44,8 @@ public class ProjectServiceImpl implements ProjectService {
                 .toList();
     }
 
-    // Busca proyecto por ID
+    // Busca un proyecto por su identificadorID, lanzando excepción si no se
+    // encuentra
     @Override
     public Project obtenerProyectoPorId(Long id) {
         ProjectEntity entity = projectRepository.findById(id)
@@ -50,35 +53,36 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.toModel(entity);
     }
 
-    // Obtiene proyectos por propietario
+    // Obtiene el catálogo paginado de proyectos asociados a un UID de usuario
+    // específico
     @Override
     public Page<Project> obtenerProyectosPorPropietario(String uid, Pageable pageable) {
         return projectRepository.findByOwner_Uid(uid, pageable)
                 .map(projectMapper::toModel);
     }
 
-    // Filtra proyectos por categoría
+    // Filtra proyectos por su origen (académico/laboral) mediante paginación
     @Override
     public Page<Project> obtenerProyectosPorCategoria(ProjectEntity.Category category, Pageable pageable) {
         return projectRepository.findByCategory(category, pageable)
                 .map(projectMapper::toModel);
     }
 
-    // Filtra proyectos por rol
+    // Consulta proyectos registrados bajo un perfil técnico específico
     @Override
     public Page<Project> obtenerProyectosPorRol(ProjectEntity.ProjectRole role, Pageable pageable) {
         return projectRepository.findByRole(role, pageable)
                 .map(projectMapper::toModel);
     }
 
-    // Crea nuevo proyecto
+    // Persiste un nuevo proyecto sincronizando el nombre del programador desde el
+    // propietario
     @Override
     @Transactional
     public Project crearProyecto(Project projectModel) {
-        // Convierte modelo a entidad
         ProjectEntity entity = projectMapper.toEntity(projectModel);
 
-        // Sincroniza nombre del programador
+        // Copia el nombre visible del usuario propietario a la entidad del proyecto
         if (projectModel.getOwner() != null) {
             entity.setProgrammerName(projectModel.getOwner().getDisplayName());
         }
@@ -87,40 +91,38 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.toModel(saved);
     }
 
-    // Valida propiedad del proyecto
+    // Verifica si el usuario actual tiene privilegios de administrador o es el
+    // dueño del recurso
     private void validarPropiedad(ProjectEntity project, String appUserUid) {
-        // Verifica admin
         boolean isAdmin = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         if (isAdmin) {
-            return; // Admin OK
+            return; // Los administradores tienen acceso total
         }
 
-        // Verifica propietario
+        // Valida que el UID del usuario solicitante coincida con el UID del propietario
         if (project.getOwner() != null && project.getOwner().getUid().equals(appUserUid)) {
-            return; // Propietario OK
+            return;
         }
 
-        // Acceso denegado
         throw new AccessDeniedException(
                 "No tienes permisos para modificar este proyecto");
     }
 
-    // Actualiza proyecto
+    // Modifica un proyecto existente aplicando cambios parciales y validando
+    // autoría
     @Override
     @Transactional
     public Project actualizarProyecto(Long id, Project projectUpdateModel, String requestUserUid) {
-        // Busca proyecto
         ProjectEntity existingEntity = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto", "id", id));
 
-        // Valida permisos
         validarPropiedad(existingEntity, requestUserUid);
 
-        // Actualiza campos parciales
+        // Actualización condicional de campos mutables del proyecto
         if (projectUpdateModel.getTitle() != null)
             existingEntity.setTitle(projectUpdateModel.getTitle());
         if (projectUpdateModel.getDescription() != null)
@@ -138,19 +140,18 @@ public class ProjectServiceImpl implements ProjectService {
         if (projectUpdateModel.getImageUrl() != null)
             existingEntity.setImageUrl(projectUpdateModel.getImageUrl());
 
-        // Guarda cambios
         ProjectEntity saved = projectRepository.save(existingEntity);
         return projectMapper.toModel(saved);
     }
 
-    // Elimina proyecto
+    // Elimina un registro de proyecto tras confirmar que el usuario tiene permisos
+    // suficientes
     @Override
     @Transactional
     public void eliminarProyecto(Long id, String requestUserUid) {
         ProjectEntity entity = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto", "id", id));
 
-        // Valida permisos
         validarPropiedad(entity, requestUserUid);
 
         projectRepository.delete(entity);

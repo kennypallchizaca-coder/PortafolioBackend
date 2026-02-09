@@ -10,13 +10,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-// Clase encargada de la transformación de datos entre Entidades JPA, Modelos de Negocio y DTOs de Usuario
+// Componente para la transformación de datos entre Entidades JPA, Modelos de Negocio y DTOs de Usuario
 @Component
 public class UserMapper {
 
-    // Transforma una entidad de base de datos a un modelo de negocio
+    // Transforma una entidad de persistencia a un modelo de dominio de negocio
     public User toModel(UserEntity entity) {
-        // Validar nulidad para evitar excepciones de puntero nulo
         if (entity == null)
             return null;
 
@@ -25,10 +24,12 @@ public class UserMapper {
         model.setEmail(entity.getEmail());
         model.setPassword(entity.getPassword());
         model.setDisplayName(entity.getDisplayName());
-        // Mapeo seguro de enumeraciones de roles
+
+        // Asegura la compatibilidad de tipos entre enums de roles
         if (entity.getRole() != null) {
             model.setRole(User.Role.valueOf(entity.getRole().name()));
         }
+
         model.setSpecialty(entity.getSpecialty());
         model.setBio(entity.getBio());
         model.setPhotoURL(entity.getPhotoURL());
@@ -43,9 +44,9 @@ public class UserMapper {
         return model;
     }
 
-    // Transforma un modelo de negocio a una entidad JPA para persistencia
+    // Convierte un modelo de dominio en una entidad persistible para la base de
+    // datos
     public UserEntity toEntity(User model) {
-        // Validar nulidad antes de la conversión
         if (model == null)
             return null;
 
@@ -54,10 +55,12 @@ public class UserMapper {
         entity.setEmail(model.getEmail());
         entity.setPassword(model.getPassword());
         entity.setDisplayName(model.getDisplayName());
-        // Mapeo de roles para compatibilidad con la base de datos
+
+        // Mapea el rol del modelo al formato enumerado de la entidad JPA
         if (model.getRole() != null) {
             entity.setRole(UserEntity.Role.valueOf(model.getRole().name()));
         }
+
         entity.setSpecialty(model.getSpecialty());
         entity.setBio(model.getBio());
         entity.setPhotoURL(model.getPhotoURL());
@@ -72,38 +75,31 @@ public class UserMapper {
         return entity;
     }
 
-    // Aplica actualizaciones parciales desde un DTO de actualización al modelo de
-    // usuario existente
+    // Sincroniza los cambios parciales enviados en la petición con el modelo de
+    // usuario actual
     public void updateModel(User user, UserUpdateRequestDto dto) {
-        // Actualizar nombre si se proporciona en la petición
         if (dto.getDisplayName() != null) {
             user.setDisplayName(dto.getDisplayName());
         }
-        // Actualizar biografía si se proporciona
         if (dto.getBio() != null) {
             user.setBio(dto.getBio());
         }
-        // Actualizar especialidad del programador
         if (dto.getSpecialty() != null) {
             user.setSpecialty(dto.getSpecialty());
         }
-        // Actualizar URL de fotografía de perfil o portafolio
         if (dto.getPhotoURL() != null) {
             user.setPhotoURL(dto.getPhotoURL());
         }
-        // Sincronizar lista de habilidades técnicas
         if (dto.getSkills() != null) {
             user.setSkills(dto.getSkills());
         }
-        // Sincronizar horario de disponibilidad
         if (dto.getSchedule() != null) {
             user.setSchedule(dto.getSchedule());
         }
-        // Actualizar estado de disponibilidad general
         if (dto.getAvailable() != null) {
             user.setAvailable(dto.getAvailable());
         }
-        // Actualizar enlaces de redes sociales si están presentes
+        // Actualiza individualmente los enlaces a perfiles externos configurados
         if (dto.getGithub() != null) {
             user.setGithub(dto.getGithub());
         }
@@ -115,9 +111,9 @@ public class UserMapper {
         }
     }
 
-    // Convierte un modelo de usuario a un DTO de respuesta para la API
+    // Transforma el modelo de dominio a una representación simplificada para
+    // respuestas de API
     public UserResponseDto toResponseDto(User user) {
-        // Validar nulidad para evitar errores de serialización
         if (user == null)
             return null;
 
@@ -126,10 +122,11 @@ public class UserMapper {
         dto.setEmail(user.getEmail());
         dto.setDisplayName(user.getDisplayName());
 
-        // Mapear rol de usuario al formato de la respuesta
+        // Asegura que el rol se transmita correctamente en la respuesta serializada
         if (user.getRole() != null) {
             dto.setRole(com.lexisware.portafolio.users.entities.UserEntity.Role.valueOf(user.getRole().name()));
         }
+
         dto.setSpecialty(user.getSpecialty());
         dto.setBio(user.getBio());
         dto.setPhotoURL(user.getPhotoURL());
@@ -144,14 +141,15 @@ public class UserMapper {
         return dto;
     }
 
-    // Convierte una lista de modelos a una lista de DTOs de respuesta
+    // Procesa una colección completa de modelos para su conversión a DTOs de
+    // respuesta
     public List<UserResponseDto> toResponseDtoList(List<User> users) {
         return users.stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    // Convierte una lista de entidades JPA a una lista de modelos de negocio
+    // Facilita la carga masiva de entidades transformándolas a modelos de negocio
     public List<User> toModelList(List<UserEntity> entities) {
         return entities.stream()
                 .map(this::toModel)

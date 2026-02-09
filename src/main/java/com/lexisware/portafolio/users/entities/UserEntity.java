@@ -9,18 +9,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-// Entidad de usuario
+// Representación persistente de un usuario en el sistema con sus datos y relaciones
 @Entity
 @Table(name = "users")
 public class UserEntity {
 
     @Id
-    private String uid; // UID Usuario
+    private String uid;
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    // Contraseña hasheada
+    // Almacena la clave del usuario cifrada mediante algoritmos de hashing
     @Column(nullable = false)
     private String password;
 
@@ -28,40 +28,40 @@ public class UserEntity {
     private String displayName;
 
     @Enumerated(EnumType.STRING)
-    private Role role; // Rol usuario
+    private Role role;
 
-    private String specialty; // Especialidad
+    private String specialty;
 
     @Column(length = 1000)
-    private String bio; // Biografía
+    private String bio;
 
-    private String photoURL; // URL Foto
+    private String photoURL;
 
-    private Boolean available = false; // Disponibilidad
+    private Boolean available = false;
 
-    // Redes sociales
-    private String github; // GitHub
-    private String instagram; // Instagram
-    private String whatsapp; // WhatsApp
+    // Referencias a perfiles externos para vinculación y contacto
+    private String github;
+    private String instagram;
+    private String whatsapp;
 
-    // Habilidades
+    // Listado de aptitudes técnicas recolectadas para el perfil público
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_skills", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "skill")
     private List<String> skills;
 
-    // Horarios
+    // Franjas horarias configuradas por el programador para brindar asesorías
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_schedules", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "time_slot")
     private List<String> schedule;
 
-    // Proyectos del usuario
+    // Relación con los proyectos desarrollados y publicados por este usuario
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("owner")
     private List<ProjectEntity> projects = new ArrayList<>();
 
-    // Asesorías como programador
+    // Registro de solicitudes de asesoría donde el usuario actúa como mentor
     @OneToMany(mappedBy = "programmer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("programmer")
     private List<AdvisoryEntity> advisoriesAsProgrammer = new ArrayList<>();
@@ -72,16 +72,18 @@ public class UserEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Roles
+    // Niveles de privilegio y tipos de usuario admitidos en la plataforma
     public enum Role {
-        PROGRAMMER, // Programador
-        ADMIN, // Administrador
-        EXTERNAL, // Externo
+        PROGRAMMER,
+        ADMIN,
+        EXTERNAL,
     }
 
     public UserEntity() {
     }
 
+    // Inicializa una nueva entidad de usuario con todos sus atributos personales y
+    // profesionales
     public UserEntity(String uid, String email, String password, String displayName, Role role, String specialty,
             String bio, String photoURL, Boolean available, String github, String instagram, String whatsapp,
             List<String> skills, List<String> schedule, List<ProjectEntity> projects,

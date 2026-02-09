@@ -9,8 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import jakarta.mail.internet.MimeMessage;
 
-// Servicio de emails
-
+// Servicio encargado de la composición y envío asíncrono de notificaciones por correo electrónico
 @Service
 public class EmailService {
 
@@ -18,6 +17,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    // Inicializa el servicio con el emisor de correos configurado en el sistema
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
@@ -28,7 +28,8 @@ public class EmailService {
     @Value("${mail.from.name}")
     private String fromName;
 
-    // Envía email HTML
+    // Ejecuta el envío de correos en formato HTML de manera asíncrona para no
+    // bloquear el hilo principal
     @Async
     public void sendHtmlEmail(String to, String subject, String htmlContent) {
         try {
@@ -47,7 +48,8 @@ public class EmailService {
         }
     }
 
-    // Email bienvenida
+    // Remite un mensaje de bienvenida personalizado tras la creación de una nueva
+    // cuenta
     public void sendWelcomeEmail(String to, String userName) {
         String subject = "¡Bienvenido a LEXISWARE Portafolio!";
         String htmlContent = """
@@ -66,7 +68,8 @@ public class EmailService {
         sendHtmlEmail(to, subject, htmlContent);
     }
 
-    // Notifica nueva asesoría
+    // Notifica al programador sobre la recepción de una nueva solicitud de asesoría
+    // técnica
     public void sendAdvisoryNotificationToProgrammer(
             String programmerEmail,
             String programmerName,
@@ -100,7 +103,8 @@ public class EmailService {
         sendHtmlEmail(programmerEmail, subject, htmlContent);
     }
 
-    // Confirma solicitud asesoría
+    // Envía una confirmación al solicitante indicando que su petición ha sido
+    // enviada correctamente
     public void sendAdvisoryConfirmationToRequester(
             String requesterEmail,
             String requesterName,
@@ -129,7 +133,8 @@ public class EmailService {
         sendHtmlEmail(requesterEmail, subject, htmlContent);
     }
 
-    // Notifica cambio estado
+    // Informa al usuario sobre la aprobación o el rechazo de su solicitud de
+    // asesoría
     public void sendAdvisoryStatusUpdate(
             String requesterEmail,
             String requesterName,

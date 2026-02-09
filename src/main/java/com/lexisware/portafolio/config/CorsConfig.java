@@ -9,12 +9,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+// Configuración global de CORS para permitir peticiones desde el frontend
 @Configuration
 public class CorsConfig {
 
     @Value("${cors.allowed-origins}")
     private String allowedOrigins;
 
+    // Define las reglas de CORS: orígenes, métodos y cabeceras permitidos
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

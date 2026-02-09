@@ -11,23 +11,28 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-// Repositorio de proyectos
+// Interfaz para la manipulación persistente de proyectos mediante Spring Data JPA
 @Repository
 public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
 
-    // Busca proyectos por propietario
+    // Recupera una página de proyectos que pertenecen a un usuario específico
+    // mediante su UID
     Page<ProjectEntity> findByOwner_Uid(String uid, Pageable pageable);
 
-    // Filtra proyectos por categoría
+    // Filtra los proyectos registrados según su categoría asignada (académico o
+    // laboral)
     Page<ProjectEntity> findByCategory(ProjectEntity.Category category, Pageable pageable);
 
-    // Filtra proyectos por rol
+    // Obtiene proyectos cuyos desarrolladores desempeñaron un rol técnico
+    // específico
     Page<ProjectEntity> findByRole(ProjectEntity.ProjectRole role, Pageable pageable);
 
-    // Busca por propietario y categoría
+    // Realiza una búsqueda combinada por identificador de usuario y categoría de
+    // proyecto
     Page<ProjectEntity> findByOwner_UidAndCategory(String uid, ProjectEntity.Category category, Pageable pageable);
 
-    // Cuenta proyectos por usuario
+    // Genera estadísticas personalizadas contando los proyectos totales publicados
+    // por cada usuario
     @Query("SELECT new com.lexisware.portafolio.dashboard.dtos.UserProjectCount(p.owner.displayName, COUNT(p)) FROM ProjectEntity p GROUP BY p.owner.displayName")
     List<UserProjectCount> countProjectsByUser();
 }

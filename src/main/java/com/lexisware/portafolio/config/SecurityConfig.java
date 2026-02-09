@@ -1,6 +1,6 @@
 package com.lexisware.portafolio.config;
 
-import com.lexisware.portafolio.auth.services.CustomUserDetailsService;
+import com.lexisware.portafolio.auth.services.impl.CustomUserDetailsService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-// Configuración de seguridad
+// Clase principal de configuración de Spring Security
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -32,19 +32,20 @@ public class SecurityConfig {
         this.customUserDetailsService = customUserDetailsService;
     }
 
-    // Bean codificador password
+    // Define el encoder BCrypt para el hashing de contraseñas
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Bean AuthManager
+    // Expone el AuthenticationManager para el proceso de login
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    // Bean AuthProvider
+    // Configura el proveedor de autenticación con UserDetailsService y
+    // PasswordEncoder
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -53,50 +54,33 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    // Cadena filtros seguridad
+    // Define la cadena de filtros: reglas HTTP, sesión stateless y filtro JWT
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Desactiva CSRF (Stateless)
-                .csrf(csrf -> csrf.disable())
-
-                // Configura CORS
+                .csrf(csrf -> csrf.disable()) // Desactiva CSRF (Stateless)
                 .cors(cors -> {
                 })
-
-                // Sesión Stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider()) // Usar nuestro proveedor personalizado
-
-                // Reglas autorización
+                .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
-
-                        // Monitoreo
                         .requestMatchers("/actuator/**").permitAll()
-
-                        // Swagger/OpenAPI
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/**")
                         .permitAll()
-
-                        // Lectura global
+                        // Rutas de lectura global
                         .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/portfolios/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-
                         // Rutas protegidas
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/projects/**").authenticated()
                         .requestMatchers("/api/advisories/**").authenticated()
                         .requestMatchers("/api/portfolios/**").authenticated()
                         .requestMatchers("/api/files/**").authenticated()
-
-                        // Resto autenticado
                         .anyRequest().authenticated())
-
-                // Filtro JWT antes
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

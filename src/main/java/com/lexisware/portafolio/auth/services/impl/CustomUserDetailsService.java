@@ -1,4 +1,4 @@
-package com.lexisware.portafolio.auth.services;
+package com.lexisware.portafolio.auth.services.impl;
 
 import com.lexisware.portafolio.users.entities.UserEntity;
 import com.lexisware.portafolio.users.repositories.UserRepository;
@@ -11,7 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collections;
 
-// Servicio para cargar usuarios desde BD
+// Implementación de UserDetailsService para cargar usuarios desde la base de datos
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -23,11 +23,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Busca usuario por email
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
-        // Retorna UserDetails
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),

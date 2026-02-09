@@ -1,13 +1,15 @@
 package com.lexisware.portafolio.dashboard.dtos;
 
+// DTO para representar el registro de usuarios agrupado por periodo temporal
 public class UserGrowthStats {
-    private Integer month; // 1-12
-    private Integer year;
-    private Long count;
+    private Integer month; // Número del mes (1-12)
+    private Integer year; // Año del registro
+    private Long count; // Cantidad de usuarios registrados en este periodo
 
     public UserGrowthStats() {
     }
 
+    // Inicializa el DTO con el mes, año y cantidad de usuarios correspondiente
     public UserGrowthStats(Integer month, Integer year, Long count) {
         this.month = month;
         this.year = year;

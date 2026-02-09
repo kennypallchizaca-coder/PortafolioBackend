@@ -4,10 +4,7 @@ import com.lexisware.portafolio.dashboard.dtos.DashboardStats;
 import com.lexisware.portafolio.dashboard.dtos.UserProjectCount;
 import com.lexisware.portafolio.dashboard.dtos.UserGrowthStats;
 import com.lexisware.portafolio.dashboard.dtos.AdvisoryStatsDto;
-import com.lexisware.portafolio.users.repositories.UserRepository;
-import com.lexisware.portafolio.project.repositories.ProjectRepository;
-import com.lexisware.portafolio.advisory.repositories.AdvisoryRepository;
-import com.lexisware.portafolio.advisory.entities.AdvisoryEntity;
+import com.lexisware.portafolio.dashboard.services.DashboardService;
 
 import java.util.List;
 
@@ -16,56 +13,47 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// Controlador para obtener métricas y estadísticas globales del sistema
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
-        private final UserRepository userRepository;
-        private final ProjectRepository projectRepository;
-        private final AdvisoryRepository advisoryRepository;
+        private final DashboardService dashboardService;
 
-        public DashboardController(UserRepository userRepository, ProjectRepository projectRepository,
-                        AdvisoryRepository advisoryRepository) {
-                this.userRepository = userRepository;
-                this.projectRepository = projectRepository;
-                this.advisoryRepository = advisoryRepository;
+        // Inicializa el controlador con el servicio de dashboard
+        public DashboardController(DashboardService dashboardService) {
+                this.dashboardService = dashboardService;
         }
 
+        // Retorna un resumen general: cantidad de usuarios, proyectos y estados de
+        // asesorías
         @GetMapping("/stats")
         public ResponseEntity<DashboardStats> getStats() {
-                long programmers = userRepository.count();
-                long projects = projectRepository.count();
-
-                long pending = advisoryRepository.countByStatus(AdvisoryEntity.Status.pending);
-                long approved = advisoryRepository.countByStatus(AdvisoryEntity.Status.approved);
-                long rejected = advisoryRepository.countByStatus(AdvisoryEntity.Status.rejected);
-
-                return ResponseEntity.ok(DashboardStats.builder()
-                                .programmersCount(programmers)
-                                .projectsCount(projects)
-                                .advisoriesPending(pending)
-                                .advisoriesApproved(approved)
-                                .advisoriesRejected(rejected)
-                                .build());
+                return ResponseEntity.ok(dashboardService.getGlobalStats());
         }
 
+        // Obtiene el ranking de cantidad de proyectos por cada usuario
         @GetMapping("/projects-by-user")
         public ResponseEntity<List<UserProjectCount>> getProjectStatsByUser() {
-                return ResponseEntity.ok(projectRepository.countProjectsByUser());
+                return ResponseEntity.ok(dashboardService.getProjectsByUser());
         }
 
+        // Retorna las estadísticas de crecimiento de usuarios registrados a lo largo
+        // del tiempo
         @GetMapping("/user-growth")
         public ResponseEntity<List<UserGrowthStats>> getUserGrowth() {
-                return ResponseEntity.ok(userRepository.countUsersByGrowth());
+                return ResponseEntity.ok(dashboardService.getUserGrowth());
         }
 
+        // Obtiene el historial de asesorías solicitado agrupado por mes
         @GetMapping("/advisories-history")
         public ResponseEntity<List<AdvisoryStatsDto>> getAdvisoryHistory() {
-                return ResponseEntity.ok(advisoryRepository.countAdvisoriesByMonth());
+                return ResponseEntity.ok(dashboardService.getAdvisoryHistory());
         }
 
+        // Retorna la distribución de asesorías atendidas por cada programador
         @GetMapping("/advisories-by-programmer")
         public ResponseEntity<List<AdvisoryStatsDto>> getAdvisoriesByProgrammer() {
-                return ResponseEntity.ok(advisoryRepository.countAdvisoriesByProgrammer());
+                return ResponseEntity.ok(dashboardService.getAdvisoriesByProgrammer());
         }
 }

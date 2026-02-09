@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-// DTO de registro de usuario
+// DTO con la información necesaria para registrar un nuevo usuario
 public class RegisterRequest {
 
     @NotBlank(message = "El email es obligatorio")
@@ -18,8 +18,7 @@ public class RegisterRequest {
     @NotBlank(message = "El nombre es obligatorio")
     private String displayName;
 
-    // Rol del usuario
-    private String role;
+    private String role; // Rol opcional asignado al usuario
 
     public RegisterRequest() {
     }

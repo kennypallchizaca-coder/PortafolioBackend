@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
+// Servicio de gestión de notificaciones y tareas programadas para recordatorios
 @Service
 public class NotificationService {
 
@@ -19,22 +20,23 @@ public class NotificationService {
     private final AdvisoryRepository advisoryRepository;
     private final EmailService emailService;
 
+    // Inicializa el servicio con los repositorios y el motor de envío de correos
     public NotificationService(AdvisoryRepository advisoryRepository, EmailService emailService) {
         this.advisoryRepository = advisoryRepository;
         this.emailService = emailService;
     }
 
-    @Scheduled(cron = "0 0 9 * * ?") // 9 AM diario
+    // Tarea diaria a las 9 AM para avisar sobre las asesorías del día siguiente
+    @Scheduled(cron = "0 0 9 * * ?")
     public void sendDailyReminders() {
         log.info("[CRON] Ejecutando recordatorios diarios de asesorías...");
 
-        // Asesorías mañana
         String tomorrow = LocalDate.now().plusDays(1).toString();
         List<AdvisoryEntity> advisories = advisoryRepository.findByDate(tomorrow);
 
         for (AdvisoryEntity advisory : advisories) {
             if (advisory.getStatus() == AdvisoryEntity.Status.approved) {
-                // Recordatorio programador
+                // Notificación al programador
                 try {
                     emailService.sendHtmlEmail(
                             advisory.getProgrammerEmail(),
@@ -46,7 +48,7 @@ public class NotificationService {
                     log.error("Error enviando recordatorio a programador: {}", e.getMessage());
                 }
 
-                // Recordatorio solicitante
+                // Notificación al solicitante de la asesoría
                 try {
                     emailService.sendHtmlEmail(
                             advisory.getRequesterEmail(),
@@ -59,38 +61,30 @@ public class NotificationService {
                 }
             }
         }
-
         log.info("[CRON] Recordatorios enviados con éxito. Total procesados: {}", advisories.size());
     }
 
-    @Scheduled(cron = "0 */15 * * * ?") // Cada 15 minutos
+    // Tarea ejecutada cada 15 minutos para recordar sesiones próximas (30 min
+    // antes)
+    @Scheduled(cron = "0 */15 * * * ?")
     public void checkUpcomingAdvisories() {
         log.info("[CRON] Verificando asesorías próximas para recordatorio (30 min antes)...");
 
-        // Fecha actual
         String today = LocalDate.now().toString();
         java.time.LocalTime now = java.time.LocalTime.now();
 
-        // Busca asesorías de hoy aprobadas y sin recordatorio enviado
         List<AdvisoryEntity> advisories = advisoryRepository.findByDateAndStatusAndReminderSentFalse(
                 today, AdvisoryEntity.Status.approved);
 
         int count = 0;
         for (AdvisoryEntity advisory : advisories) {
             try {
-                // Parsea hora asesoría (Formato esperado HH:mm)
                 java.time.LocalTime advisoryTime = java.time.LocalTime.parse(advisory.getTime());
-
-                // Calcula diferencia en minutos
                 long minutesUntilStart = java.time.temporal.ChronoUnit.MINUTES.between(now, advisoryTime);
 
-                // Si falta entre 0 y 30 minutos (y no ha pasado más de 15 min del inicio, por
-                // si acaso)
+                // Verifica si la sesión inicia en la ventana de los próximos 30 minutos
                 if (minutesUntilStart >= 0 && minutesUntilStart <= 30) {
-                    // Enviar notificaciones
                     sendReminderEmail(advisory);
-
-                    // Marcar como enviado
                     advisory.setReminderSent(true);
                     advisoryRepository.save(advisory);
                     count++;
@@ -105,8 +99,8 @@ public class NotificationService {
         }
     }
 
+    // Envía los correos de proximidad tanto al programador como al solicitante
     private void sendReminderEmail(AdvisoryEntity advisory) {
-        // Recordatorio Programador
         try {
             emailService.sendHtmlEmail(
                     advisory.getProgrammerEmail(),
@@ -117,7 +111,6 @@ public class NotificationService {
             log.error("Error enviando email programador: {}", e.getMessage());
         }
 
-        // Recordatorio Solicitante
         try {
             emailService.sendHtmlEmail(
                     advisory.getRequesterEmail(),
@@ -129,7 +122,7 @@ public class NotificationService {
         }
     }
 
-    // Envía email HTML
+    // Facilita el envío puntual de correos electrónicos en formato HTML
     public void sendEmail(String to, String subject, String body) {
         emailService.sendHtmlEmail(to, subject, body);
     }

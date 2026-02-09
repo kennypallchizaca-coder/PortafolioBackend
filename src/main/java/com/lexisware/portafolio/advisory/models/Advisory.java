@@ -3,7 +3,6 @@ package com.lexisware.portafolio.advisory.models;
 import java.time.LocalDateTime;
 
 // Modelo de dominio para representar una sesión de Asesoría técnica
-// Modelo de dominio para representar una sesión de Asesoría técnica
 public class Advisory {
     private Long id;
     private String programmerId;
@@ -20,6 +19,7 @@ public class Advisory {
     public Advisory() {
     }
 
+    // Constructor completo para inicialización
     public Advisory(Long id, String programmerId, String programmerEmail, String programmerName, String requesterName,
             String requesterEmail, String date, String time, String note, Status status, LocalDateTime createdAt) {
         this.id = id;
@@ -123,6 +123,7 @@ public class Advisory {
         this.createdAt = createdAt;
     }
 
+    // Enumeración de estados posibles de una asesoría
     public enum Status {
         pending,
         approved,

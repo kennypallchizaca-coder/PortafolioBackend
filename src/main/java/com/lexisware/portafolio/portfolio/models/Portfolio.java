@@ -4,8 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import com.lexisware.portafolio.project.models.Project;
 
-// Modelo de dominio para representar un Portafolio de programador
-// Modelo de dominio para representar un Portafolio de programador
+// Modelo de dominio que encapsula la lógica y los datos de un portafolio profesional
 public class Portfolio {
     private Long id;
     private String userId;
@@ -21,6 +20,8 @@ public class Portfolio {
     public Portfolio() {
     }
 
+    // Inicializa el modelo de dominio con todos los atributos descriptivos y de
+    // auditoría
     public Portfolio(Long id, String userId, List<Project> projects, String title, String description, String theme,
             Boolean isPublic, List<String> skills, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;

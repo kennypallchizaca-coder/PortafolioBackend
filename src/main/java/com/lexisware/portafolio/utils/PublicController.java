@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-// Controlador público (Health/Info)
+// Expositor de puntos de acceso públicos para verificar el estado y la metadata de la API
 @RestController
 @RequestMapping("/api/public")
 public class PublicController {
 
-    // Health Check
+    // Verifica la disponibilidad operativa de los servicios del backend
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> response = new HashMap<>();
@@ -24,7 +24,8 @@ public class PublicController {
         return ResponseEntity.ok(response);
     }
 
-    // Info API
+    // Retorna información descriptiva general sobre el propósito y autoría de la
+    // aplicación
     @GetMapping("/info")
     public ResponseEntity<Map<String, String>> info() {
         Map<String, String> info = new HashMap<>();

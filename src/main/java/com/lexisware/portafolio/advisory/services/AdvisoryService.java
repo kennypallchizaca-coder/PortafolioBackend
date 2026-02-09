@@ -5,42 +5,42 @@ import com.lexisware.portafolio.advisory.models.Advisory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-// Interfaz para gestión de asesorías
+// Interfaz para definir la lógica de negocio de las asesorías
 public interface AdvisoryService {
 
-    // Obtiene todas las asesorías paginadas
+    // Obtiene todas las asesorías registradas de forma paginada
     Page<Advisory> obtenerTodasLasAsesorias(Pageable pageable);
 
-    // Busca asesoría por ID
+    // Obtiene los detalles de una asesoría específica por su ID
     Advisory obtenerAsesoriaPorId(Long id);
 
-    // Obtiene asesorías por programador
+    // Obtiene las asesorías asignadas a un programador específico
     Page<Advisory> obtenerAsesoriasPorProgramador(String programmerId, Pageable pageable);
 
-    // Obtiene asesorías por email solicitante
+    // Obtiene las asesorías solicitadas por un email específico
     Page<Advisory> obtenerAsesoriasPorSolicitante(String email, Pageable pageable);
 
-    // Filtra asesorías por estado
+    // Filtra las asesorías según su estado actual
     Page<Advisory> obtenerAsesoriasPorEstado(AdvisoryEntity.Status status, Pageable pageable);
 
-    // Crea asesoría
+    // Crea una nueva asesoría y su notificación correspondiente
     Advisory crearAsesoria(Advisory advisoryModel);
 
-    // Actualiza estado de asesoría
+    // Actualiza el estado de una asesoría existente
     Advisory actualizarEstadoAsesoria(Long id, Advisory.Status status, String requestUserUid);
 
-    // Aprueba asesoría
+    // Aprueba una asesoría pendiente
     Advisory aprobarAsesoria(Long id, String requestUserUid);
 
-    // Rechaza asesoría
+    // Rechaza una asesoría pendiente
     Advisory rechazarAsesoria(Long id, String requestUserUid);
 
-    // Elimina asesoría
+    // Elimina una asesoría del sistema
     void eliminarAsesoria(Long id, String requestUserUid);
 
-    // Elimina historial de asesorías (completadas)
+    // Elimina todo el historial de asesorías finalizadas de un programador
     void eliminarHistorial(String programmerUid);
 
-    // Elimina historial de asesorías de solicitante (completadas)
-    void eliminarHistorialSolicitante(String requesterEmail);
+    // Elimina el historial de asesorías completadas o rechazadas de un solicitante
+    void eliminarHistorialSolicitante(String email);
 }

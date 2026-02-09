@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-// Controlador de autenticación
+// Controlador para gestionar el registro y autenticación de usuarios
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -24,7 +24,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // Registra nuevo usuario
+    // Registra un nuevo usuario en el sistema
     @PostMapping("/register")
     @Operation(summary = "Registrar usuario", description = "Crea una nueva cuenta de usuario y retorna el token de acceso")
     public ResponseEntity<AuthResponse> registrar(@Valid @RequestBody RegisterRequest request) {
@@ -32,7 +32,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Inicia sesión
+    // Autentica las credenciales del usuario y genera un token JWT
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión", description = "Autentica usuario y retorna token JWT")
     public ResponseEntity<AuthResponse> iniciarSesion(@Valid @RequestBody LoginRequest request) {
@@ -40,7 +40,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // Obtiene usuario actual
+    // Recupera la información del usuario autenticado actualmente
     @GetMapping("/me")
     @Operation(summary = "Obtener usuario actual", description = "Retorna información del usuario autenticado")
     public ResponseEntity<User> obtenerUsuarioActual(@AuthenticationPrincipal String uid) {

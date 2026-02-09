@@ -5,8 +5,7 @@ import java.util.List;
 import com.lexisware.portafolio.users.models.User;
 import com.lexisware.portafolio.portfolio.models.Portfolio;
 
-// Modelo de dominio que representa un Proyecto en la lógica de negocio
-// Modelo de dominio que representa un Proyecto en la lógica de negocio
+// Modelo de dominio que representa la lógica de negocio y atributos de un Proyecto
 public class Project {
     private Long id;
     private User owner;
@@ -25,6 +24,7 @@ public class Project {
     public Project() {
     }
 
+    // Inicializa el modelo de dominio con todos los datos técnicos y de autoría
     public Project(Long id, User owner, Portfolio portfolio, String title, String description, Category category,
             ProjectRole role, List<String> techStack, String repoUrl, String demoUrl, String imageUrl,
             String programmerName, LocalDateTime createdAt) {
@@ -147,13 +147,13 @@ public class Project {
         this.createdAt = createdAt;
     }
 
-    // Categoría del proyecto para filtrado
+    // Clasificación de proyectos para propósitos de filtrado en la UI
     public enum Category {
         academico,
         laboral
     }
 
-    // Roles disponibles en el desarrollo
+    // Perfiles tecnológicos aplicables al desarrollo del proyecto
     public enum ProjectRole {
         frontend,
         backend,

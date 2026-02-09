@@ -22,7 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 
-// Controlador de proyectos
+// API para la gestión integral de proyectos tecnológicos y portafolios
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
@@ -34,6 +34,7 @@ public class ProjectController {
     private final UserService userService;
     private final PortfolioService portfolioService;
 
+    // Inicializa el controlador con servicios de proyectos, usuarios y portafolios
     public ProjectController(ProjectService projectService, ProjectMapper projectMapper, UserService userService,
             PortfolioService portfolioService) {
         this.projectService = projectService;
@@ -42,7 +43,7 @@ public class ProjectController {
         this.portfolioService = portfolioService;
     }
 
-    // Obtiene todos los proyectos paginados
+    // Retorna una página de proyectos registrados en el sistema
     @GetMapping
     public ResponseEntity<Page<ProjectResponseDto>> obtenerTodosLosProyectos(
             @PageableDefault(size = 10) Pageable pageable) {
@@ -50,14 +51,14 @@ public class ProjectController {
         return ResponseEntity.ok(projects.map(projectMapper::toResponseDto));
     }
 
-    // Busca proyecto por ID
+    // Busca la información detallada de un proyecto por su identificadorID
     @GetMapping("/{id}")
     public ResponseEntity<ProjectResponseDto> obtenerProyectoPorId(@PathVariable("id") Long id) {
         Project project = projectService.obtenerProyectoPorId(id);
         return ResponseEntity.ok(projectMapper.toResponseDto(project));
     }
 
-    // Obtiene mis proyectos
+    // Lista los proyectos asociados al usuario autenticado mediante paginación
     @GetMapping("/my-projects")
     public ResponseEntity<Page<ProjectResponseDto>> obtenerMisProyectos(
             @AuthenticationPrincipal String uid,
@@ -66,7 +67,7 @@ public class ProjectController {
         return ResponseEntity.ok(projects.map(projectMapper::toResponseDto));
     }
 
-    // Obtiene proyectos por usuario
+    // Consulta los proyectos de un usuario específico mediante su identificador UID
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<ProjectResponseDto>> obtenerProyectosPorUsuario(
             @PathVariable("userId") String userId,
@@ -75,7 +76,7 @@ public class ProjectController {
         return ResponseEntity.ok(projects.map(projectMapper::toResponseDto));
     }
 
-    // Filtra proyectos por categoría
+    // Filtra el catálogo de proyectos por su categoría (académico o laboral)
     @GetMapping("/category/{category}")
     public ResponseEntity<Page<ProjectResponseDto>> obtenerProyectosPorCategoria(
             @PathVariable("category") ProjectEntity.Category category,
@@ -84,7 +85,7 @@ public class ProjectController {
         return ResponseEntity.ok(projects.map(projectMapper::toResponseDto));
     }
 
-    // Filtra proyectos por rol
+    // Filtra proyectos según el rol desempeñado (frontend, backend, etc.)
     @GetMapping("/role/{role}")
     public ResponseEntity<Page<ProjectResponseDto>> obtenerProyectosPorRol(
             @PathVariable("role") ProjectEntity.ProjectRole role,
@@ -93,7 +94,8 @@ public class ProjectController {
         return ResponseEntity.ok(projects.map(projectMapper::toResponseDto));
     }
 
-    // Crea nuevo proyecto
+    // Registra un nuevo proyecto vinculándolo al usuario actual y opcionalmente a
+    // un portafolio
     @PostMapping
     public ResponseEntity<ProjectResponseDto> crearProyecto(
             @Valid @RequestBody ProjectRequestDto request,
@@ -101,17 +103,14 @@ public class ProjectController {
 
         Project projectModel = projectMapper.toModel(request);
 
-        // Usuario actual como propietario
-        String ownerUid = uid;
-
-        // Vincula usuario complet
+        // Intenta asociar el objeto de usuario completo del propietario
         try {
-            projectModel.setOwner(userService.obtenerUsuarioPorId(ownerUid));
+            projectModel.setOwner(userService.obtenerUsuarioPorId(uid));
         } catch (Exception e) {
             log.error("Error al obtener usuario para vincular al proyecto: {}", e.getMessage());
         }
 
-        // Vincula a portafolio si existeID
+        // Vincula el proyecto a un portafolio específico si se proporciona el ID
         if (request.getPortfolioId() != null) {
             try {
                 projectModel.setPortfolio(portfolioService.obtenerPortafolioPorId(request.getPortfolioId()));
@@ -124,7 +123,7 @@ public class ProjectController {
         return new ResponseEntity<>(projectMapper.toResponseDto(created), HttpStatus.CREATED);
     }
 
-    // Actualiza proyecto
+    // Actualiza los datos de un proyecto existente validando la propiedad por UID
     @PatchMapping("/{id}")
     public ResponseEntity<ProjectResponseDto> actualizarProyecto(
             @PathVariable("id") Long id,
@@ -139,7 +138,8 @@ public class ProjectController {
         return ResponseEntity.ok(projectMapper.toResponseDto(updated));
     }
 
-    // Elimina proyecto
+    // Elimina un proyecto del sistema validando los permisos del usuario
+    // solicitante
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProyecto(
             @PathVariable("id") Long id,

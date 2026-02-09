@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
-// Entidad de asesoría técnica
+// Entidad JPA que representa una asesoría técnica en la base de datos
 @Entity
 @Table(name = "advisories")
 public class AdvisoryEntity {
@@ -14,13 +14,13 @@ public class AdvisoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Programador/Mentor asignado
+    // Relación Many-to-One con la entidad de usuario (Programador)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "programmer_id", insertable = false, updatable = false)
 
     private UserEntity programmer;
 
-    // UID del programador
+    // UID del programador para referencia directa
     @Column(name = "programmer_id", nullable = false)
     private String programmerId;
 
@@ -30,22 +30,22 @@ public class AdvisoryEntity {
     @Column(name = "programmer_name")
     private String programmerName;
 
-    // Nombre del solicitante
+    // Campos relacionados con el solicitante de la asesoría
     @Column(name = "requester_name", nullable = false)
     private String requesterName;
 
     @Column(name = "requester_email", nullable = false)
     private String requesterEmail;
 
-    // Agenda de la sesión
-    private String date; // Fecha programada
-    private String time; // Hora acordada
+    // Campos para la agenda de la sesión
+    private String date; // Fecha programada para la sesión
+    private String time; // Hora acordada para la sesión
 
     @Column(length = 1000)
-    private String note; // Nota/Descripción
+    private String note; // Nota descriptiva o motivo de la asesoría
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.pending; // Estado solicitud
+    private Status status = Status.pending; // Estado actual de la solicitud
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -53,16 +53,18 @@ public class AdvisoryEntity {
     @Column(name = "reminder_sent")
     private Boolean reminderSent = false;
 
-    // Estados de solicitud
+    // Enumeración para los estados posibles de una asesoría
     public enum Status {
-        pending, // Pendiente
-        approved, // Aprobada
-        rejected // Rechazada
+        pending, // Solicitud pendiente de aprobación
+        approved, // Asesoría aprobada y agendada
+        rejected // Solicitud rechazada
     }
 
+    // Constructor vacío requerido por JPA
     public AdvisoryEntity() {
     }
 
+    // Constructor con todos los campos para inicialización completa
     public AdvisoryEntity(Long id, UserEntity programmer, String programmerId, String programmerEmail,
             String programmerName, String requesterName, String requesterEmail, String date, String time, String note,
             Status status, LocalDateTime createdAt) {

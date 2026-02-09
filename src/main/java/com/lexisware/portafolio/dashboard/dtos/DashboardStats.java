@@ -1,5 +1,6 @@
 package com.lexisware.portafolio.dashboard.dtos;
 
+// DTO que consolida las métricas globales mostradas en el dashboard principal
 public class DashboardStats {
     private long programmersCount;
     private long projectsCount;
@@ -10,6 +11,7 @@ public class DashboardStats {
     public DashboardStats() {
     }
 
+    // Inicializa el resumen estadístico con los contadores de cada métrica
     public DashboardStats(long programmersCount, long projectsCount, long advisoriesPending, long advisoriesApproved,
             long advisoriesRejected) {
         this.programmersCount = programmersCount;
@@ -59,7 +61,6 @@ public class DashboardStats {
         this.advisoriesRejected = advisoriesRejected;
     }
 
-    // Builder manual básico por si acaso se usa o se quiere usar en el futuro
     public static Builder builder() {
         return new Builder();
     }

@@ -3,10 +3,10 @@ package com.lexisware.portafolio.auth.dtos;
 import com.lexisware.portafolio.users.entities.UserEntity;
 import com.lexisware.portafolio.users.models.User;
 
-// Respuesta de autenticación
+// DTO de respuesta que incluye el token JWT y los datos del usuario
 public class AuthResponse {
-    private String token; // Token JWT
-    private UserDTO user;
+    private String token; // Token de acceso JWT
+    private UserDTO user; // Información del usuario autenticado
 
     public AuthResponse() {
     }
@@ -16,7 +16,6 @@ public class AuthResponse {
         this.user = user;
     }
 
-    // Getters y Setters
     public String getToken() {
         return token;
     }
@@ -33,7 +32,7 @@ public class AuthResponse {
         this.user = user;
     }
 
-    // DTO de usuario seguro
+    // DTO interno para exponer datos de usuario sin información sensible
     public static class UserDTO {
         private String uid;
         private String email;
@@ -92,7 +91,7 @@ public class AuthResponse {
             this.available = available;
         }
 
-        // Factory desde Entidad
+        // Crea una instancia de UserDTO a partir de una entidad UserEntity
         public static UserDTO fromEntity(UserEntity user) {
             return new UserDTO(
                     user.getUid(),
@@ -102,7 +101,7 @@ public class AuthResponse {
                     user.getAvailable());
         }
 
-        // Factory desde Modelo
+        // Crea una instancia de UserDTO a partir de un modelo User
         public static UserDTO fromModel(User user) {
             return new UserDTO(
                     user.getUid(),
