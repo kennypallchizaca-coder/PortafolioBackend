@@ -4,20 +4,23 @@ import com.lexisware.portafolio.files.dtos.UploadResponseDto;
 import com.lexisware.portafolio.files.services.CloudinaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/files")
-@RequiredArgsConstructor
 @Tag(name = "Archivos", description = "Gestión de archivos e imágenes")
 public class FileController {
 
     private final CloudinaryService cloudinaryService;
 
-    // subir imagen de perfil
+    public FileController(CloudinaryService cloudinaryService) {
+        this.cloudinaryService = cloudinaryService;
+    }
+
+    // Sube imagen de perfil
     @PostMapping("/upload/profile")
     @Operation(summary = "Subir imagen de perfil", description = "Sube una imagen de perfil a Cloudinary")
     public ResponseEntity<UploadResponseDto> subirImagenPerfil(
@@ -30,7 +33,7 @@ public class FileController {
                         .build());
     }
 
-    // subir imagen de proyecto
+    // Sube imagen de proyecto
     @PostMapping("/upload/project")
     @Operation(summary = "Subir imagen de proyecto", description = "Sube una imagen de proyecto a Cloudinary")
     public ResponseEntity<UploadResponseDto> subirImagenProyecto(
@@ -43,7 +46,7 @@ public class FileController {
                         .build());
     }
 
-    // eliminar imagen
+    // Elimina imagen
     @DeleteMapping
     @Operation(summary = "Eliminar imagen", description = "Elimina una imagen de Cloudinary usando su publicId")
     public ResponseEntity<Void> eliminarImagen(@RequestParam String publicId) {

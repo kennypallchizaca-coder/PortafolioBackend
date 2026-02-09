@@ -4,8 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,31 +17,35 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
-// Filtro de interceptación para validar tokens JWT en cada petición HTTP
+// Filtro de validación JWT
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     private final JwtTokenProvider tokenProvider;
+
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            // Extraer el token de la cabecera "Authorization: Bearer <token>"
+            // Extrae token de cabecera
             String jwt = obtenerJwtDeRequest(request);
 
-            // Validar existencia y formato del token
+            // Valida token
             if (StringUtils.hasText(jwt) && tokenProvider.validarToken(jwt)) {
                 String userId = tokenProvider.getUserIdFromJWT(jwt);
                 String userRole = tokenProvider.getUserRoleFromJWT(jwt);
                 String userEmail = tokenProvider.getUserEmailFromJWT(jwt);
 
-                // Crear objeto de autoridad basado en el rol del usuario
+                // Crea autoridad según rol
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userRole);
 
-                // Establecer el contexto de seguridad de Spring con la información del usuario
+                // Establece contexto seguridad
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userId, userEmail, Collections.singletonList(authority));
 
@@ -57,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // Utilidad para extraer el token JWT de la cabecera de la petición
+    // Extrae JWT de request
     private String obtenerJwtDeRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {

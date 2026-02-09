@@ -1,6 +1,6 @@
 package com.lexisware.portafolio.reports.controllers;
 
-import com.lexisware.portafolio.reports.services.ReportService;
+import com.lexisware.portafolio.reports.services.ReportServicePdf;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,21 +14,21 @@ import java.io.ByteArrayInputStream;
 
 @RestController
 @RequestMapping("/api/reports")
-public class ReportController {
+public class ReportPdfController {
 
-    private final ReportService reportService;
+    private final ReportServicePdf reportServicePdf;
 
-    public ReportController(ReportService reportService) {
-        this.reportService = reportService;
+    public ReportPdfController(ReportServicePdf reportServicePdf) {
+        this.reportServicePdf = reportServicePdf;
     }
 
     @GetMapping("/programmers/pdf")
     @SuppressWarnings("null")
     public ResponseEntity<InputStreamResource> downloadProgrammersReport() {
-        ByteArrayInputStream bis = reportService.generateProgrammersPdf();
+        ByteArrayInputStream bis = reportServicePdf.generateProgrammersPdf();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=programadores.pdf");
+        headers.add("Content-Disposition", "attachment; filename=ReportePDF_Programadores.pdf");
 
         return ResponseEntity
                 .ok()
@@ -39,10 +39,10 @@ public class ReportController {
 
     @GetMapping("/advisories/pdf")
     public ResponseEntity<InputStreamResource> downloadAdvisoriesReport() {
-        ByteArrayInputStream bis = reportService.generateAdvisoriesPdf();
+        ByteArrayInputStream bis = reportServicePdf.generateAdvisoriesPdf();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=asesorias.pdf");
+        headers.add("Content-Disposition", "attachment; filename=ReportePDF_Asesorias.pdf");
 
         return ResponseEntity
                 .ok()
@@ -54,10 +54,10 @@ public class ReportController {
     @GetMapping("/projects/{uid}/pdf")
     public ResponseEntity<InputStreamResource> downloadUserProjectsReport(
             @PathVariable("uid") String uid) {
-        ByteArrayInputStream bis = reportService.generateUserProjectsPdf(uid);
+        ByteArrayInputStream bis = reportServicePdf.generateUserProjectsPdf(uid);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=proyectos.pdf");
+        headers.add("Content-Disposition", "attachment; filename=ReportePDF_Proyectos.pdf");
 
         return ResponseEntity
                 .ok()

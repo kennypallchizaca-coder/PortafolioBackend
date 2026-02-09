@@ -7,57 +7,60 @@ import com.lexisware.portafolio.portfolio.dtos.PortfolioResponseDto;
 import com.lexisware.portafolio.portfolio.models.Portfolio;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-// Controlador REST para la gestión de portafolios de los programadores
+// Controlador de portafolios
 @RestController
 @RequestMapping("/api/portfolios")
-@RequiredArgsConstructor
-
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
     private final PortfolioMapper portfolioMapper;
 
-    // Obtiene una lista de todos los portafolios marcados como públicos
+    public PortfolioController(PortfolioService portfolioService, PortfolioMapper portfolioMapper) {
+        this.portfolioService = portfolioService;
+        this.portfolioMapper = portfolioMapper;
+    }
+
+    // Obtiene portafolios públicos
     @GetMapping("/public")
     public ResponseEntity<List<PortfolioResponseDto>> obtenerPortafoliosPublicos() {
         List<Portfolio> portfolios = portfolioService.obtenerPortafoliosPublicos();
         return ResponseEntity.ok(portfolioMapper.toResponseDtoList(portfolios));
     }
 
-    // Busca un portafolio específico por su ID numérico
+    // Busca portafolio por ID
     @GetMapping("/{id}")
     public ResponseEntity<PortfolioResponseDto> obtenerPortafolioPorId(@PathVariable("id") Long id) {
         Portfolio portfolio = portfolioService.obtenerPortafolioPorId(id);
         return ResponseEntity.ok(portfolioMapper.toResponseDto(portfolio));
     }
 
-    // Retorna el portafolio asociado al usuario autenticado actualmente
+    // Obtiene mi portafolio
     @GetMapping("/me")
     public ResponseEntity<PortfolioResponseDto> obtenerMiPortafolio(@AuthenticationPrincipal String uid) {
         Portfolio portfolio = portfolioService.obtenerPortafolioPorUsuario(uid);
         return ResponseEntity.ok(portfolioMapper.toResponseDto(portfolio));
     }
 
-    // Busca el portafolio asociado a un UID de usuario específico
+    // Obtiene portafolio por usuario
     @GetMapping("/user/{userId}")
     public ResponseEntity<PortfolioResponseDto> obtenerPortafolioPorUsuario(@PathVariable("userId") String userId) {
         Portfolio portfolio = portfolioService.obtenerPortafolioPorUsuario(userId);
         return ResponseEntity.ok(portfolioMapper.toResponseDto(portfolio));
     }
 
-    // Crea un nuevo portafolio para el usuario autenticado
+    // Crea portafolio
     @PostMapping
     public ResponseEntity<PortfolioResponseDto> crearPortafolio(
             @AuthenticationPrincipal String uid,
             @Valid @RequestBody PortfolioRequestDto request) {
-        // Asegurar que el portafolio se asigne al usuario que realiza la petición
+        // Asigna portafolio al usuario actual
         if (request.getUserId() == null || request.getUserId().isEmpty()) {
             request.setUserId(uid);
         }
@@ -66,7 +69,7 @@ public class PortfolioController {
         return new ResponseEntity<>(portfolioMapper.toResponseDto(created), HttpStatus.CREATED);
     }
 
-    // Actualiza campos específicos de un portafolio existente
+    // Actualiza portafolio
     @PatchMapping("/{id}")
     public ResponseEntity<PortfolioResponseDto> actualizarPortafolio(
             @PathVariable("id") Long id,
@@ -81,7 +84,7 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolioMapper.toResponseDto(updated));
     }
 
-    // Elimina permanentemente un portafolio
+    // Elimina portafolio
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarPortafolio(
             @PathVariable("id") Long id,

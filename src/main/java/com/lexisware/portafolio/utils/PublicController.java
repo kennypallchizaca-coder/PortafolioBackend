@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-// Controlador para endpoints públicos y verificación de salud
+// Controlador público (Health/Info)
 @RestController
 @RequestMapping("/api/public")
 public class PublicController {
 
-    // Endpoint de verificación de salud
+    // Health Check
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> response = new HashMap<>();
@@ -24,7 +24,7 @@ public class PublicController {
         return ResponseEntity.ok(response);
     }
 
-    // Endpoint de información
+    // Info API
     @GetMapping("/info")
     public ResponseEntity<Map<String, String>> info() {
         Map<String, String> info = new HashMap<>();

@@ -1,11 +1,30 @@
 package com.lexisware.portafolio.dashboard.dtos;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@Data
-@AllArgsConstructor
 public class UserProjectCount {
     private String userName;
     private long projectCount;
+
+    public UserProjectCount() {
+    }
+
+    public UserProjectCount(String userName, long projectCount) {
+        this.userName = userName;
+        this.projectCount = projectCount;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public long getProjectCount() {
+        return projectCount;
+    }
+
+    public void setProjectCount(long projectCount) {
+        this.projectCount = projectCount;
+    }
 }

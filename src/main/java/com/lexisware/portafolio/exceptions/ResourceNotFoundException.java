@@ -1,6 +1,6 @@
-package com.lexisware.portafolio.utils;
+package com.lexisware.portafolio.exceptions;
 
-// Excepción para recursos no encontrados (404)
+// Excepción recurso no encontrado
 public class ResourceNotFoundException extends RuntimeException {
 
     public ResourceNotFoundException(String message) {

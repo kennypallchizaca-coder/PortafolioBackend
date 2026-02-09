@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-// Entidad JPA que representa el portafolio de un programador
+// Entidad de portafolio
 @Entity
 @Table(name = "portfolios")
 public class PortfolioEntity {
@@ -17,20 +17,26 @@ public class PortfolioEntity {
     private Long id;
 
     @Column(nullable = false, unique = true, name = "user_id")
-    private String userId; // Identificador único del usuario propietario (UID)
+    private String userId; // UID del propietario
 
-    // Lista de proyectos vinculados a este portafolio
+    // Proyectos del portafolio
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectEntity> projects = new ArrayList<>();
 
     @Column(nullable = false)
-    private String title; // Título principal del portafolio
+    private String title; // Título
 
     @Column(length = 2000)
-    private String description; // Descripción detallada o perfil del programador
+    private String description; // Descripción/Perfil
 
-    private String theme; // Preferencia visual o tema del portafolio
-    private Boolean isPublic = true; // Define si el portafolio es visible públicamente
+    private String theme; // Tema visual
+    private Boolean isPublic = true; // Visibilidad pública
+
+    // Habilidades mostradas en el portafolio
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "portfolio_skills", joinColumns = @JoinColumn(name = "portfolio_id"))
+    @Column(name = "skill")
+    private List<String> skills = new ArrayList<>();
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -41,11 +47,13 @@ public class PortfolioEntity {
     public PortfolioEntity() {
     }
 
-    public PortfolioEntity(Long id, String userId, List<ProjectEntity> projects, String title, String description,
+    public PortfolioEntity(Long id, String userId, List<ProjectEntity> projects, List<String> skills, String title,
+            String description,
             String theme, Boolean isPublic, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.userId = userId;
         this.projects = projects;
+        this.skills = skills != null ? skills : new ArrayList<>();
         this.title = title;
         this.description = description;
         this.theme = theme;
@@ -124,6 +132,14 @@ public class PortfolioEntity {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<String> getSkills() {
+        return skills;
+    }
+
+    public void setSkills(List<String> skills) {
+        this.skills = skills;
     }
 
     @Override

@@ -7,13 +7,15 @@ import com.lexisware.portafolio.auth.dtos.RegisterRequest;
 import com.lexisware.portafolio.users.entities.UserEntity;
 import com.lexisware.portafolio.users.models.User;
 import com.lexisware.portafolio.users.mappers.UserMapper;
-import com.lexisware.portafolio.utils.ResourceNotFoundException;
-import com.lexisware.portafolio.utils.UnauthorizedException;
+import com.lexisware.portafolio.exceptions.ResourceNotFoundException;
+import com.lexisware.portafolio.exceptions.UnauthorizedException;
 import com.lexisware.portafolio.users.repositories.UserRepository;
 import com.lexisware.portafolio.config.JwtTokenProvider;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,36 +23,48 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-// Servicio de autenticación y gestión de sesiones
+// Servicio de autenticación y sesiones
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
     private final UserMapper userMapper;
+    private final AuthenticationManager authenticationManager;
 
-    // Procesa el registro de nuevos usuarios en el sistema
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider, EmailService emailService, UserMapper userMapper,
+            AuthenticationManager authenticationManager) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.emailService = emailService;
+        this.userMapper = userMapper;
+        this.authenticationManager = authenticationManager;
+    }
+
+    // Registra nuevo usuario
     @Transactional
     public AuthResponse registrar(RegisterRequest request) {
         log.info("Registrando usuario: {}", request.getEmail());
 
-        // Validar unicidad del correo electrónico
+        // Valida email único
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("El email ya está registrado");
         }
 
-        // Mapear datos del DTO a la entidad de persistencia
+        // Mapea a entidad
         UserEntity user = new UserEntity();
         user.setUid(UUID.randomUUID().toString());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword())); // Encriptar contraseña
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Encripta clave
         user.setDisplayName(request.getDisplayName());
 
-        // Determinar rol del usuario (EXTERNAL por defecto si no se especifica)
+        // Asigna rol (default EXTERNAL)
         String roleStr = (request.getRole() == null || request.getRole().isBlank()) ? "EXTERNAL"
                 : request.getRole().toUpperCase();
         user.setRole(UserEntity.Role.valueOf(roleStr));
@@ -58,17 +72,17 @@ public class AuthService {
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
-        // Persistir el nuevo usuario en la base de datos
+        // Guarda usuario
         user = userRepository.save(user);
 
-        // Notificar al usuario vía correo electrónico
+        // Envía email de bienvenida
         try {
             emailService.sendWelcomeEmail(user.getEmail(), user.getDisplayName());
         } catch (Exception e) {
             log.error("Error enviando email de bienvenida: {}", e.getMessage());
         }
 
-        // Generar token JWT para autenticación inmediata
+        // Genera token JWT
         String token = jwtTokenProvider.generarToken(
                 user.getUid(),
                 user.getEmail(),
@@ -79,24 +93,27 @@ public class AuthService {
         return new AuthResponse(token, AuthResponse.UserDTO.fromEntity(user));
     }
 
-    // Valida credenciales y genera sesión para el usuario
+    // Inicia sesión
     public AuthResponse iniciarSesion(LoginRequest request) {
         log.info("Iniciando sesión: {}", request.getEmail());
 
-        // Verificar existencia del usuario
-        UserEntity user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UnauthorizedException("Credenciales inválidas"));
-
-        // Comparar contraseña hash con la proporcionada
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        // Autentica con Spring Security
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        } catch (Exception e) {
             throw new UnauthorizedException("Credenciales inválidas");
         }
 
-        // Registrar marca de tiempo de la última actividad
+        // Busca usuario completo
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UnauthorizedException("Usuario no encontrado (inconsistencia)"));
+
+        // Actualiza última actividad
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
 
-        // Generar nuevo token de acceso
+        // Genera token
         String token = jwtTokenProvider.generarToken(
                 user.getUid(),
                 user.getEmail(),
@@ -107,7 +124,7 @@ public class AuthService {
         return new AuthResponse(token, AuthResponse.UserDTO.fromEntity(user));
     }
 
-    // Recupera la información del usuario basada en su UID
+    // Obtiene usuario actual
     public User obtenerUsuarioActual(String uid) {
         UserEntity entity = userRepository.findById(uid)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));

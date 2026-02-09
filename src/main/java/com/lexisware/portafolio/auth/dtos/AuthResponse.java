@@ -1,20 +1,39 @@
 package com.lexisware.portafolio.auth.dtos;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import com.lexisware.portafolio.users.entities.UserEntity;
 import com.lexisware.portafolio.users.models.User;
 
-// Respuesta exitosa tras la autenticación, con token JWT y datos del usuario
-@Data
-@AllArgsConstructor
+// Respuesta de autenticación
 public class AuthResponse {
-    private String token; // Token JWT para autorización en cabeceras HTTP
+    private String token; // Token JWT
     private UserDTO user;
 
-    // DTO anidado para transferir datos básicos del usuario sin sensitive info
-    @Data
-    @AllArgsConstructor
+    public AuthResponse() {
+    }
+
+    public AuthResponse(String token, UserDTO user) {
+        this.token = token;
+        this.user = user;
+    }
+
+    // Getters y Setters
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public UserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserDTO user) {
+        this.user = user;
+    }
+
+    // DTO de usuario seguro
     public static class UserDTO {
         private String uid;
         private String email;
@@ -22,7 +41,58 @@ public class AuthResponse {
         private String role;
         private Boolean available;
 
-        // Factory method para crear el DTO desde una Entidad JPA
+        public UserDTO() {
+        }
+
+        public UserDTO(String uid, String email, String displayName, String role, Boolean available) {
+            this.uid = uid;
+            this.email = email;
+            this.displayName = displayName;
+            this.role = role;
+            this.available = available;
+        }
+
+        public String getUid() {
+            return uid;
+        }
+
+        public void setUid(String uid) {
+            this.uid = uid;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public void setRole(String role) {
+            this.role = role;
+        }
+
+        public Boolean getAvailable() {
+            return available;
+        }
+
+        public void setAvailable(Boolean available) {
+            this.available = available;
+        }
+
+        // Factory desde Entidad
         public static UserDTO fromEntity(UserEntity user) {
             return new UserDTO(
                     user.getUid(),
@@ -32,7 +102,7 @@ public class AuthResponse {
                     user.getAvailable());
         }
 
-        // Factory method para crear el DTO desde un Modelo de negocio
+        // Factory desde Modelo
         public static UserDTO fromModel(User user) {
             return new UserDTO(
                     user.getUid(),

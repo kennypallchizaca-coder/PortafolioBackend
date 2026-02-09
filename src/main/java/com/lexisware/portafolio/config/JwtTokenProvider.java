@@ -2,17 +2,19 @@ package com.lexisware.portafolio.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-// Proveedor de servicios para la creación, parseo y validación de tokens JWT
+// Proveedor de tokens JWT
 @Component
-@Slf4j
 public class JwtTokenProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -20,12 +22,12 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long jwtExpirationInMs;
 
-    // Generar la clave secreta segura para HMACS-SHA
+    // Genera clave firma
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    // Genera un token JWT compacto con claims (sujeto, email, rol)
+    // Genera token
     public String generarToken(String userId, String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
@@ -43,7 +45,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // Obtiene el identificador de usuario (Subject) del token
+    // Obtiene ID usuario
     public String getUserIdFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -54,7 +56,7 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    // Extrae el email del usuario desde los claims del token
+    // Extrae email
     public String getUserEmailFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -65,7 +67,7 @@ public class JwtTokenProvider {
         return claims.get("email", String.class);
     }
 
-    // Extrae el rol del usuario desde los claims del token
+    // Extrae rol
     public String getUserRoleFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -76,7 +78,7 @@ public class JwtTokenProvider {
         return claims.get("role", String.class);
     }
 
-    // Valida la integridad, firma y expiración del token JWT
+    // Valida token
     public boolean validarToken(String authToken) {
         try {
             Jwts.parser()

@@ -3,10 +3,8 @@ package com.lexisware.portafolio.auth.dtos;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 
-// DTO para la captura de datos durante el registro de nuevos usuarios
-@Data
+// DTO de registro de usuario
 public class RegisterRequest {
 
     @NotBlank(message = "El email es obligatorio")
@@ -20,6 +18,48 @@ public class RegisterRequest {
     @NotBlank(message = "El nombre es obligatorio")
     private String displayName;
 
-    // Rol asignado al usuario (ROLE_USER, ROLE_ADMIN, ROLE_PROGRAMMER)
+    // Rol del usuario
     private String role;
+
+    public RegisterRequest() {
+    }
+
+    public RegisterRequest(String email, String password, String displayName, String role) {
+        this.email = email;
+        this.password = password;
+        this.displayName = displayName;
+        this.role = role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

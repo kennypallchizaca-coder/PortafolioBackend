@@ -10,27 +10,26 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-// Repositorio para gestión de usuarios
+// Repositorio de usuarios
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
 
-    // Buscar usuario por email (para login)
+    // Busca usuario por email
     Optional<UserEntity> findByEmail(String email);
 
-    // Buscar usuarios por rol
+    // Busca usuarios por rol
     List<UserEntity> findByRole(UserEntity.Role role);
 
-    // Buscar programadores disponibles
+    // Busca programadores disponibles
     List<UserEntity> findByAvailableTrue();
 
-    // Buscar programadores disponibles por rol
+    // Busca programadores disponibles por rol
     List<UserEntity> findByRoleAndAvailableTrue(UserEntity.Role role);
 
-    // Contar usuarios por rol
+    // Cuenta usuarios por rol
     long countByRole(UserEntity.Role role);
 
-    // Estadísticas: Crecimiento de usuarios por mes (PostgreSQL specific date
-    // function)
+    // Estadísticas: Crecimiento usuarios/mes
     @Query("SELECT new com.lexisware.portafolio.dashboard.dtos.UserGrowthStats(CAST(EXTRACT(MONTH FROM u.createdAt) AS int), CAST(EXTRACT(YEAR FROM u.createdAt) AS int), COUNT(u)) FROM UserEntity u GROUP BY EXTRACT(YEAR FROM u.createdAt), EXTRACT(MONTH FROM u.createdAt) ORDER BY EXTRACT(YEAR FROM u.createdAt), EXTRACT(MONTH FROM u.createdAt)")
     List<UserGrowthStats> countUsersByGrowth();
 }

@@ -1,0 +1,332 @@
+package com.lexisware.portafolio.reports.services;
+
+import com.lexisware.portafolio.users.entities.UserEntity;
+import com.lexisware.portafolio.users.repositories.UserRepository;
+import com.lexisware.portafolio.advisory.entities.AdvisoryEntity;
+import com.lexisware.portafolio.advisory.repositories.AdvisoryRepository;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import org.springframework.stereotype.Service;
+
+import java.awt.Color;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import com.lexisware.portafolio.project.repositories.ProjectRepository;
+import com.lexisware.portafolio.project.entities.ProjectEntity;
+
+@Service
+public class ReportServicePdf {
+
+    // Paleta Profesional Negro/Gris (Minimalista y Elegante)
+    private static final Color PRIMARY_COLOR = new Color(71, 85, 105); // Gris oscuro (#475569)
+    private static final Color SECONDARY_COLOR = new Color(30, 41, 59); // Gris muy oscuro (#1E293B)
+    private static final Color SUCCESS_COLOR = new Color(34, 197, 94); // Verde (para estados positivos)
+    private static final Color WARNING_COLOR = new Color(245, 158, 11); // Ámbar (para advertencias)
+    private static final Color DANGER_COLOR = new Color(220, 38, 38); // Rojo (para estados negativos)
+    private static final Color HEADER_BG = new Color(15, 23, 42); // Negro azulado (#0F172A)
+    private static final Color SUBTITLE_COLOR = new Color(148, 163, 184); // Gris medio (#94A3B8)
+    private static final Color BORDER_COLOR = new Color(203, 213, 225); // Gris claro para bordes (#CBD5E1)
+
+    private final UserRepository userRepository;
+    private final AdvisoryRepository advisoryRepository;
+    private final ProjectRepository projectRepository;
+
+    public ReportServicePdf(UserRepository userRepository, AdvisoryRepository advisoryRepository,
+            ProjectRepository projectRepository) {
+        this.userRepository = userRepository;
+        this.advisoryRepository = advisoryRepository;
+        this.projectRepository = projectRepository;
+    }
+
+    public ByteArrayInputStream generateUserProjectsPdf(String userUid) {
+        Document document = new Document(PageSize.A4, 36, 36, 60, 36);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Header profesional
+            addReportHeader(document, "REPORTE DE PROYECTOS");
+
+            // Info del Usuario
+            UserEntity user = userRepository.findById(userUid).orElse(null);
+            String userName = (user != null) ? user.getDisplayName() : "Usuario Desconocido";
+
+            Font infoFont = FontFactory.getFont(FontFactory.HELVETICA, 11, Color.DARK_GRAY);
+            Paragraph userInfo = new Paragraph("Programador: " + userName, infoFont);
+            userInfo.setAlignment(Element.ALIGN_LEFT);
+            userInfo.setSpacingAfter(10);
+            document.add(userInfo);
+
+            // Tabla mejorada
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100);
+            table.setWidths(new int[] { 3, 5, 3, 2 });
+            table.setSpacingBefore(10);
+
+            addStyledTableHeader(table, "Título");
+            addStyledTableHeader(table, "Descripción");
+            addStyledTableHeader(table, "Tecnologías");
+            addStyledTableHeader(table, "Estado");
+
+            List<ProjectEntity> projects = projectRepository
+                    .findByOwner_Uid(userUid, org.springframework.data.domain.Pageable.unpaged()).getContent();
+
+            if (projects.isEmpty()) {
+                PdfPCell emptyCell = new PdfPCell(new Phrase("No hay proyectos registrados",
+                        FontFactory.getFont(FontFactory.HELVETICA, 10, Font.ITALIC, Color.GRAY)));
+                emptyCell.setColspan(4);
+                emptyCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                emptyCell.setPadding(15);
+                table.addCell(emptyCell);
+            } else {
+                for (ProjectEntity project : projects) {
+                    addStyledCell(table, project.getTitle());
+                    addStyledCell(table,
+                            project.getDescription() != null ? project.getDescription() : "Sin descripción");
+                    String stack = (project.getTechStack() != null) ? String.join(", ", project.getTechStack()) : "N/A";
+                    addStyledCell(table, stack);
+
+                    PdfPCell statusCell = new PdfPCell(new Phrase("Activo",
+                            FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, Color.WHITE)));
+                    statusCell.setBackgroundColor(SUCCESS_COLOR);
+                    statusCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    statusCell.setPadding(5);
+                    table.addCell(statusCell);
+                }
+            }
+
+            document.add(table);
+            addFooter(document, projects.size());
+            document.close();
+
+        } catch (DocumentException e) {
+            throw new RuntimeException("Error al generar PDF: " + e.getMessage());
+        }
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    public ByteArrayInputStream generateProgrammersPdf() {
+        Document document = new Document(PageSize.A4, 36, 36, 60, 36);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Header profesional
+            addReportHeader(document, "REPORTE DE PROGRAMADORES");
+
+            // Tabla mejorada
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100);
+            table.setWidths(new int[] { 3, 4, 3, 2 });
+            table.setSpacingBefore(15);
+
+            addStyledTableHeader(table, "Nombre Completo");
+            addStyledTableHeader(table, "Email Corporativo");
+            addStyledTableHeader(table, "Especialidad");
+            addStyledTableHeader(table, "Estado");
+
+            List<UserEntity> programmers = userRepository.findByRole(UserEntity.Role.PROGRAMMER);
+
+            for (UserEntity user : programmers) {
+                addStyledCell(table, user.getDisplayName() != null ? user.getDisplayName() : "N/A");
+                addStyledCell(table, user.getEmail());
+                addStyledCell(table, user.getSpecialty() != null ? user.getSpecialty() : "General");
+
+                boolean isAvailable = user.getAvailable() != null && user.getAvailable();
+                PdfPCell activeCell = new PdfPCell(new Phrase(isAvailable ? "Disponible" : "No Disponible",
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, Color.WHITE)));
+                activeCell.setBackgroundColor(isAvailable ? SUCCESS_COLOR : Color.GRAY);
+                activeCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                activeCell.setPadding(5);
+                table.addCell(activeCell);
+            }
+
+            document.add(table);
+            addFooter(document, programmers.size());
+            document.close();
+
+        } catch (DocumentException e) {
+            throw new RuntimeException("Error al generar PDF: " + e.getMessage());
+        }
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    public ByteArrayInputStream generateAdvisoriesPdf() {
+        Document document = new Document(PageSize.A4.rotate(), 36, 36, 60, 36);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Header profesional
+            addReportHeader(document, "REPORTE DE ASESORÍAS");
+
+            // Tabla mejorada
+            PdfPTable table = new PdfPTable(6);
+            table.setWidthPercentage(100);
+            table.setWidths(new int[] { 3, 3, 2, 2, 3, 2 });
+            table.setSpacingBefore(15);
+
+            addStyledTableHeader(table, "Solicitante");
+            addStyledTableHeader(table, "Programador Asignado");
+            addStyledTableHeader(table, "Fecha");
+            addStyledTableHeader(table, "Hora");
+            addStyledTableHeader(table, "Motivo");
+            addStyledTableHeader(table, "Estado");
+
+            List<AdvisoryEntity> advisories = advisoryRepository.findAll();
+
+            for (AdvisoryEntity adv : advisories) {
+                addStyledCell(table, adv.getRequesterName() != null ? adv.getRequesterName() : "Anónimo");
+                addStyledCell(table,
+                        adv.getProgrammer() != null ? adv.getProgrammer().getDisplayName() : "Sin asignar");
+                addStyledCell(table, adv.getDate() != null ? adv.getDate().toString() : "N/A");
+                addStyledCell(table, adv.getTime() != null ? adv.getTime() : "N/A");
+                addStyledCell(table,
+                        adv.getNote() != null
+                                ? (adv.getNote().length() > 40 ? adv.getNote().substring(0, 37) + "..." : adv.getNote())
+                                : "Sin motivo");
+
+                PdfPCell statusCell = new PdfPCell();
+                String statusText = "";
+                Color statusColor = Color.GRAY;
+
+                if (AdvisoryEntity.Status.approved == adv.getStatus()) {
+                    statusText = "✓ Aprobada";
+                    statusColor = SUCCESS_COLOR;
+                } else if (AdvisoryEntity.Status.rejected == adv.getStatus()) {
+                    statusText = "✗ Rechazada";
+                    statusColor = DANGER_COLOR;
+                } else {
+                    statusText = "⧗ Pendiente";
+                    statusColor = WARNING_COLOR;
+                }
+
+                statusCell.setPhrase(new Phrase(statusText,
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, Color.WHITE)));
+                statusCell.setBackgroundColor(statusColor);
+                statusCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                statusCell.setPadding(5);
+                table.addCell(statusCell);
+            }
+
+            document.add(table);
+            addFooter(document, advisories.size());
+            document.close();
+
+        } catch (DocumentException e) {
+            throw new RuntimeException("Error al generar PDF: " + e.getMessage());
+        }
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    private void addReportHeader(Document document, String title) throws DocumentException {
+        // Banner superior con degradado simulado (3 líneas de diferentes tonos)
+        PdfPTable bannerTop = new PdfPTable(1);
+        bannerTop.setWidthPercentage(100);
+        PdfPCell bannerCell1 = new PdfPCell();
+        bannerCell1.setBackgroundColor(SECONDARY_COLOR);
+        bannerCell1.setFixedHeight(2);
+        bannerCell1.setBorder(Rectangle.NO_BORDER);
+        bannerTop.addCell(bannerCell1);
+        bannerTop.setSpacingAfter(0);
+        document.add(bannerTop);
+
+        PdfPTable bannerMid = new PdfPTable(1);
+        bannerMid.setWidthPercentage(100);
+        PdfPCell bannerCell2 = new PdfPCell();
+        bannerCell2.setBackgroundColor(PRIMARY_COLOR);
+        bannerCell2.setFixedHeight(3);
+        bannerCell2.setBorder(Rectangle.NO_BORDER);
+        bannerMid.addCell(bannerCell2);
+        bannerMid.setSpacingAfter(15);
+        document.add(bannerMid);
+
+        // Título principal en VERDE CLARO
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 22, PRIMARY_COLOR);
+        Paragraph titleParagraph = new Paragraph(title, titleFont);
+        titleParagraph.setAlignment(Element.ALIGN_CENTER);
+        titleParagraph.setSpacingAfter(8);
+        document.add(titleParagraph);
+
+        // Subtítulo con estilo profesional
+        Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, SUBTITLE_COLOR);
+        Paragraph subtitle = new Paragraph("LEXISWARE - Sistema de Gestión de Portafolios", subtitleFont);
+        subtitle.setAlignment(Element.ALIGN_CENTER);
+        subtitle.setSpacingAfter(5);
+        document.add(subtitle);
+
+        // Fecha de generación con formato mejorado
+        String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Font.ITALIC, new Color(100, 116, 139));
+        Paragraph dateParagraph = new Paragraph("📄 Generado el: " + currentDate, dateFont);
+        dateParagraph.setAlignment(Element.ALIGN_CENTER);
+        dateParagraph.setSpacingAfter(15);
+        document.add(dateParagraph);
+
+        // Línea separadora doble (efecto profesional)
+        PdfPTable line1 = new PdfPTable(1);
+        line1.setWidthPercentage(100);
+        PdfPCell lineCell1 = new PdfPCell();
+        lineCell1.setBackgroundColor(PRIMARY_COLOR);
+        lineCell1.setFixedHeight(2);
+        lineCell1.setBorder(Rectangle.NO_BORDER);
+        line1.addCell(lineCell1);
+        line1.setSpacingAfter(2);
+        document.add(line1);
+
+        PdfPTable line2 = new PdfPTable(1);
+        line2.setWidthPercentage(90);
+        PdfPCell lineCell2 = new PdfPCell();
+        lineCell2.setBackgroundColor(SECONDARY_COLOR);
+        lineCell2.setFixedHeight(1);
+        lineCell2.setBorder(Rectangle.NO_BORDER);
+        line2.addCell(lineCell2);
+        line2.setSpacingAfter(12);
+        document.add(line2);
+    }
+
+    private void addStyledTableHeader(PdfPTable table, String headerTitle) {
+        PdfPCell header = new PdfPCell();
+        header.setBackgroundColor(HEADER_BG);
+        header.setPhrase(new Phrase(headerTitle,
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.WHITE)));
+        header.setHorizontalAlignment(Element.ALIGN_CENTER);
+        header.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        header.setPadding(8);
+        header.setBorderWidth(0);
+        table.addCell(header);
+    }
+
+    private void addStyledCell(PdfPTable table, String content) {
+        PdfPCell cell = new PdfPCell(new Phrase(content,
+                FontFactory.getFont(FontFactory.HELVETICA, 9, Color.DARK_GRAY)));
+        cell.setPadding(6);
+        cell.setBorderColor(BORDER_COLOR);
+        cell.setBorderWidth(0.5f);
+        table.addCell(cell);
+    }
+
+    private void addFooter(Document document, int totalRecords) throws DocumentException {
+        // Resumen al final
+        Font footerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, SECONDARY_COLOR);
+        Paragraph footer = new Paragraph("\nTotal de registros: " + totalRecords, footerFont);
+        footer.setAlignment(Element.ALIGN_RIGHT);
+        footer.setSpacingBefore(15);
+        document.add(footer);
+    }
+}

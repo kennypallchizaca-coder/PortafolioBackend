@@ -2,10 +2,10 @@ package com.lexisware.portafolio.advisory.entities;
 
 import com.lexisware.portafolio.users.entities.UserEntity;
 import jakarta.persistence.*;
-import lombok.ToString;
+
 import java.time.LocalDateTime;
 
-// Entidad JPA que representa una solicitud de asesoría técnica
+// Entidad de asesoría técnica
 @Entity
 @Table(name = "advisories")
 public class AdvisoryEntity {
@@ -14,13 +14,13 @@ public class AdvisoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Usuario que actúa como programador/mentor en la sesión
+    // Programador/Mentor asignado
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "programmer_id", insertable = false, updatable = false)
-    @ToString.Exclude
+
     private UserEntity programmer;
 
-    // UID del programador asignado
+    // UID del programador
     @Column(name = "programmer_id", nullable = false)
     private String programmerId;
 
@@ -30,31 +30,34 @@ public class AdvisoryEntity {
     @Column(name = "programmer_name")
     private String programmerName;
 
-    // Nombre del usuario que solicita la asesoría
+    // Nombre del solicitante
     @Column(name = "requester_name", nullable = false)
     private String requesterName;
 
     @Column(name = "requester_email", nullable = false)
     private String requesterEmail;
 
-    // Detalles de agenda de la sesión
-    private String date; // Fecha programada para la asesoría
-    private String time; // Hora pactada para el encuentro
+    // Agenda de la sesión
+    private String date; // Fecha programada
+    private String time; // Hora acordada
 
     @Column(length = 1000)
-    private String note; // Nota o descripción de la asesoría
+    private String note; // Nota/Descripción
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.pending; // Estado de la solicitud
+    private Status status = Status.pending; // Estado solicitud
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Enumeración de los estados posibles de una solicitud
+    @Column(name = "reminder_sent")
+    private Boolean reminderSent = false;
+
+    // Estados de solicitud
     public enum Status {
-        pending, // Esperando respuesta del programador
-        approved, // Aceptada y programada
-        rejected // Denegada por el mentor
+        pending, // Pendiente
+        approved, // Aprobada
+        rejected // Rechazada
     }
 
     public AdvisoryEntity() {
@@ -171,6 +174,14 @@ public class AdvisoryEntity {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getReminderSent() {
+        return reminderSent;
+    }
+
+    public void setReminderSent(Boolean reminderSent) {
+        this.reminderSent = reminderSent;
     }
 
     @Override

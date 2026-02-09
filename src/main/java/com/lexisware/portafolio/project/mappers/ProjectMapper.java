@@ -178,4 +178,11 @@ public class ProjectMapper {
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
+
+    // Convierte una lista de entidades JPA a una lista de modelos de negocio
+    public List<Project> toModelList(List<ProjectEntity> entities) {
+        return entities.stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
+    }
 }

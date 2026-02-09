@@ -1,7 +1,7 @@
 package com.lexisware.portafolio.utils;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -9,13 +9,18 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import jakarta.mail.internet.MimeMessage;
 
-// Servicio de envío de emails
+// Servicio de emails
+
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class EmailService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+
     private final JavaMailSender mailSender;
+
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     @Value("${mail.from}")
     private String fromEmail;
@@ -23,7 +28,7 @@ public class EmailService {
     @Value("${mail.from.name}")
     private String fromName;
 
-    // Enviar email HTML
+    // Envía email HTML
     @Async
     public void sendHtmlEmail(String to, String subject, String htmlContent) {
         try {
@@ -42,7 +47,7 @@ public class EmailService {
         }
     }
 
-    // Email de bienvenida
+    // Email bienvenida
     public void sendWelcomeEmail(String to, String userName) {
         String subject = "¡Bienvenido a LEXISWARE Portafolio!";
         String htmlContent = """
@@ -61,7 +66,7 @@ public class EmailService {
         sendHtmlEmail(to, subject, htmlContent);
     }
 
-    // Notificación de nueva asesoría al programador
+    // Notifica nueva asesoría
     public void sendAdvisoryNotificationToProgrammer(
             String programmerEmail,
             String programmerName,
@@ -95,7 +100,7 @@ public class EmailService {
         sendHtmlEmail(programmerEmail, subject, htmlContent);
     }
 
-    // Confirmación de asesoría al solicitante
+    // Confirma solicitud asesoría
     public void sendAdvisoryConfirmationToRequester(
             String requesterEmail,
             String requesterName,
@@ -124,7 +129,7 @@ public class EmailService {
         sendHtmlEmail(requesterEmail, subject, htmlContent);
     }
 
-    // Actualización de estado de asesoría
+    // Notifica cambio estado
     public void sendAdvisoryStatusUpdate(
             String requesterEmail,
             String requesterName,

@@ -1381,122 +1381,54 @@ public class GlobalExceptionHandler {
 | Gradle | 8.x | Incluido via wrapper (`./gradlew`) |
 | PostgreSQL | 15+ | Local o Supabase/Render |
 | Docker | 20+ | Opcional, para entorno local |
-| Docker Compose | 2.x | Opcional, para orquestación |
 
 ### 9.2 Variables de Entorno
 
-| Variable | Propósito | Ejemplo | Requerida |
-|----------|-----------|---------|-----------|
-| `PORT` | Puerto del servidor | `8080` | No (default: 8080) |
-| `DB_URL` | URL de conexión PostgreSQL | `jdbc:postgresql://host:5432/db` | Prod: Sí |
-| `DB_USERNAME` | Usuario de base de datos | `postgres` | Prod: Sí |
-| `DB_PASSWORD` | Contraseña de base de datos | `secretpass` | Prod: Sí |
-| `JWT_SECRET` | Clave secreta para firmar JWT | `min 256 bits string` | Prod: Sí |
-| `JWT_EXPIRATION` | Duración del token (ms) | `86400000` (24h) | No |
-| `MAIL_USERNAME` | Email para SMTP | `user@gmail.com` | Sí |
-| `MAIL_PASSWORD` | App Password de Gmail | `xxxx xxxx xxxx xxxx` | Sí |
-| `MAIL_FROM` | Email remitente | `noreply@lexisware.com` | No |
-| `CORS_ALLOWED_ORIGINS` | Orígenes CORS permitidos | `http://localhost:5173,https://app.vercel.app` | No |
-| `CLOUDINARY_CLOUD_NAME` | Nombre del cloud Cloudinary | `mycloud` | Sí |
-| `CLOUDINARY_API_KEY` | API Key de Cloudinary | `123456789012345` | Sí |
-| `CLOUDINARY_API_SECRET` | API Secret de Cloudinary | `abcdefghij...` | Sí |
-| `SPRING_PROFILES_ACTIVE` | Perfil activo | `prod` | Prod: Sí |
-| `SWAGGER_ENABLED` | Habilitar Swagger UI | `true`/`false` | No |
-| `LOG_LEVEL` | Nivel de logging | `INFO`, `DEBUG`, `WARN` | No |
+El proyecto puede ejecutarse con configuración por defecto (local) o mediante variables de entorno (producción).
+
+| Variable | Propósito | Default (Local) | Requerida en Prod |
+|----------|-----------|-----------------|-------------------|
+| `PORT` | Puerto del servidor | `8080` | No |
+| `DB_URL` | URL de conexión JDBC | `jdbc:postgresql://localhost:5432/portafolio_db` | **Sí** |
+| `DB_USERNAME` | Usuario de base de datos | `postgres` | **Sí** |
+| `DB_PASSWORD` | Contraseña de base de datos | `postgres123` | **Sí** |
+| `JWT_SECRET` | Clave secreta para tokens | `...DEFAULT_KEY...` (Desarrollo) | **Sí** |
+| `MAIL_USERNAME` | Email para SMTP | `pallchizacaalexis@gmail.com` | **Sí** |
+| `MAIL_PASSWORD` | App Password de Email | `ultcfcterjepolgg` | **Sí** |
+| `CLOUDINARY_CLOUD_NAME` | Cloud Name | `dp7nyh9m5` | **Sí** |
+| `CLOUDINARY_API_KEY` | API Key | `833...` | **Sí** |
+| `CLOUDINARY_API_SECRET` | API Secret | `bgS...` | **Sí** |
 
 ### 9.3 Comandos de Ejecución
 
-#### Desarrollo Local (con Docker)
+#### Desarrollo Local
 
 ```bash
-# 1. Levantar PostgreSQL + pgAdmin
-docker-compose up -d
-
-# 2. Verificar servicios
-docker-compose ps
-
-# 3. Ejecutar aplicación
+# 1. Asegurar PostgreSQL corriendo
+# 2. Ejecutar aplicación (usa configuración default)
 ./gradlew bootRun
 
-# 4. Acceder
-# - API: http://localhost:8080
-# - Swagger: http://localhost:8080/swagger-ui.html
-# - pgAdmin: http://localhost:8081 (admin@lexisware.com / admin123)
+# En Windows:
+.\gradlew.bat bootRun
 ```
 
-#### Desarrollo Local (sin Docker)
+#### Producción (Docker / Cloud)
 
 ```bash
-# 1. Asegurar PostgreSQL corriendo en localhost:5432
-# 2. Crear base de datos
-psql -U postgres -c "CREATE DATABASE portafolio_db;"
-
-# 3. Ejecutar aplicación
-./gradlew bootRun
-
-# O en Windows:
-gradlew.bat bootRun
+# Ejecutar pasando variables de entorno
+java -jar build/libs/portafolio-1.0.0.jar \
+  --DB_URL=jdbc:postgresql://prod-db:5432/db \
+  --DB_USERNAME=admin \
+  --DB_PASSWORD=secret \
+  --JWT_SECRET=super_secure_key_2024
 ```
 
-#### Despliegue en Producción
-
-```bash
-# 1. Compilar JAR
-./gradlew clean bootJar
-
-# 2. Ejecutar con perfil de producción
-java -jar build/libs/portafolio-1.0.0.jar --spring.profiles.active=prod
-
-# O usando Docker
-docker build -t lexisware-portfolio .
-docker run -p 8080:8080 \
-  -e DB_URL=jdbc:postgresql://host:5432/db \
-  -e DB_USERNAME=user \
-  -e DB_PASSWORD=pass \
-  -e JWT_SECRET=your-secret \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  lexisware-portfolio
-```
-
-### 9.4 Comandos de Build y Test
-
-```bash
-# Compilar sin tests
-./gradlew build -x test
-
-# Ejecutar tests
-./gradlew test
-
-# Generar JAR ejecutable
-./gradlew bootJar
-
-# Limpiar + compilar
-./gradlew clean build
-
-# Ver dependencias
-./gradlew dependencies
-```
-
-### 9.5 Estructura de Configuración
+### 9.4 Estructura de Configuración
 
 ```
 src/main/resources/
-├── application.properties        # Configuración base (desarrollo)
-│   ├── server.port=8080
-│   ├── spring.datasource.*       # PostgreSQL local
-│   ├── spring.jpa.*              # Hibernate: ddl-auto=update
-│   ├── jwt.*                     # Secreto y expiración
-│   ├── spring.mail.*             # Gmail SMTP
-│   ├── cors.*                    # Orígenes permitidos
-│   ├── management.*              # Actuator
-│   ├── springdoc.*               # Swagger
-│   └── cloudinary.*              # CDN de imágenes
-│
-└── application-prod.properties   # Sobrescrituras para producción
-    ├── spring.datasource.*       # Variables de entorno
-    ├── spring.jpa.ddl-auto=validate
-    ├── spring.jpa.show-sql=false
-    └── logging.level.*=WARN
+├── application.properties        # Configuración principal con fallbacks
+└── application-prod.properties   # Perfil 'prod' optimizado
 ```
 
 ---

@@ -11,31 +11,36 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-// Repositorio para la administración de solicitudes de Asesoría
+// Repositorio de asesorías
 @Repository
 public interface AdvisoryRepository extends JpaRepository<AdvisoryEntity, Long> {
 
-    // Lista las asesorías asignadas a un programador específico
+    // Busca asesorías por programador
     Page<AdvisoryEntity> findByProgrammerId(String programmerId, Pageable pageable);
 
-    // Recupera asesorías iniciadas por un email de solicitante particular
+    // Busca asesorías por email solicitante
     Page<AdvisoryEntity> findByRequesterEmail(String email, Pageable pageable);
 
-    // Filtra las solicitudes de asesoría según su estado (pendiente, aprobada,
-    // etc.)
+    // Filtra asesorías por estado
     Page<AdvisoryEntity> findByStatus(AdvisoryEntity.Status status, Pageable pageable);
 
-    // Contar asesorías por estado
+    // Cuenta asesorías por estado
     long countByStatus(AdvisoryEntity.Status status);
 
-    // Buscar asesorías por fecha
+    // Busca asesorías por fecha
     List<AdvisoryEntity> findByDate(String date);
 
-    // Agrupar asesorías por mes (Historial) - Postgres format
+    // Busca asesorías para recordatorios (fecha, estado y no notificadas)
+    List<AdvisoryEntity> findByDateAndStatusAndReminderSentFalse(String date, AdvisoryEntity.Status status);
+
+    // Agrupa asesorías por mes
     @Query("SELECT new com.lexisware.portafolio.dashboard.dtos.AdvisoryStatsDto(CONCAT(TO_CHAR(a.createdAt, 'Mon'), ' ', TO_CHAR(a.createdAt, 'YYYY')), COUNT(a)) FROM AdvisoryEntity a GROUP BY TO_CHAR(a.createdAt, 'Mon'), TO_CHAR(a.createdAt, 'YYYY'), EXTRACT(YEAR FROM a.createdAt), EXTRACT(MONTH FROM a.createdAt) ORDER BY EXTRACT(YEAR FROM a.createdAt), EXTRACT(MONTH FROM a.createdAt)")
     List<AdvisoryStatsDto> countAdvisoriesByMonth();
 
-    // Agrupar asesorías por programador
+    // Agrupa asesorías por programador
     @Query("SELECT new com.lexisware.portafolio.dashboard.dtos.AdvisoryStatsDto(a.programmerName, COUNT(a)) FROM AdvisoryEntity a GROUP BY a.programmerName ORDER BY COUNT(a) DESC")
     List<AdvisoryStatsDto> countAdvisoriesByProgrammer();
+
+    // Elimina asesorías por programador y estado
+    void deleteByProgrammerIdAndStatusIn(String programmerId, java.util.Collection<AdvisoryEntity.Status> statuses);
 }

@@ -1,6 +1,6 @@
-package com.lexisware.portafolio.utils;
+package com.lexisware.portafolio.exceptions;
 
-// Excepción para acceso no autorizado (401)
+// Excepción no autorizado
 public class UnauthorizedException extends RuntimeException {
 
     public UnauthorizedException(String message) {

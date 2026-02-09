@@ -1,12 +1,8 @@
-package com.lexisware.portafolio.utils;
+package com.lexisware.portafolio.exceptions;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-/**
- * Excepción general de la aplicación que incluye un HttpStatus
- */
-@Getter
+// Excepción global con estado HTTP
 public class ApplicationException extends RuntimeException {
 
     private final HttpStatus httpStatus;
@@ -19,5 +15,9 @@ public class ApplicationException extends RuntimeException {
     public ApplicationException(String message, HttpStatus httpStatus, Throwable cause) {
         super(message, cause);
         this.httpStatus = httpStatus;
+    }
+
+    public HttpStatus getStatus() {
+        return httpStatus;
     }
 }

@@ -32,12 +32,16 @@ public class PortfolioMapper {
         model.setDescription(entity.getDescription());
         model.setTheme(entity.getTheme());
         model.setIsPublic(entity.getIsPublic());
+        model.setSkills(entity.getSkills() != null ? new java.util.ArrayList<>(entity.getSkills())
+                : new java.util.ArrayList<>());
         model.setCreatedAt(entity.getCreatedAt());
         model.setUpdatedAt(entity.getUpdatedAt());
 
-        // Inicializar lista de proyectos si existe relación
+        // Mapear lista de proyectos
         if (entity.getProjects() != null) {
-            model.setProjects(Collections.emptyList()); // Inicialización segura
+            model.setProjects(projectMapper.toModelList(entity.getProjects()));
+        } else {
+            model.setProjects(Collections.emptyList());
         }
 
         return model;
@@ -56,6 +60,8 @@ public class PortfolioMapper {
         entity.setDescription(model.getDescription());
         entity.setTheme(model.getTheme());
         entity.setIsPublic(model.getIsPublic());
+        entity.setSkills(
+                model.getSkills() != null ? new java.util.ArrayList<>(model.getSkills()) : new java.util.ArrayList<>());
         entity.setCreatedAt(model.getCreatedAt());
         entity.setUpdatedAt(model.getUpdatedAt());
         return entity;
@@ -71,6 +77,8 @@ public class PortfolioMapper {
         model.setDescription(dto.getDescription());
         model.setTheme(dto.getTheme());
         model.setIsPublic(dto.getIsPublic());
+        model.setSkills(
+                dto.getSkills() != null ? new java.util.ArrayList<>(dto.getSkills()) : new java.util.ArrayList<>());
         return model;
     }
 
@@ -84,6 +92,8 @@ public class PortfolioMapper {
             model.setTheme(dto.getTheme());
         if (dto.getIsPublic() != null)
             model.setIsPublic(dto.getIsPublic());
+        if (dto.getSkills() != null)
+            model.setSkills(dto.getSkills());
     }
 
     // Convierte un modelo de negocio a un DTO de respuesta para la API
@@ -97,8 +107,17 @@ public class PortfolioMapper {
         dto.setDescription(model.getDescription());
         dto.setTheme(model.getTheme());
         dto.setIsPublic(model.getIsPublic());
+        dto.setSkills(
+                model.getSkills() != null ? new java.util.ArrayList<>(model.getSkills()) : new java.util.ArrayList<>());
         dto.setCreatedAt(model.getCreatedAt());
         dto.setUpdatedAt(model.getUpdatedAt());
+
+        if (model.getProjects() != null) {
+            dto.setProjects(projectMapper.toResponseDtoList(model.getProjects()));
+        } else {
+            dto.setProjects(Collections.emptyList());
+        }
+
         return dto;
     }
 
