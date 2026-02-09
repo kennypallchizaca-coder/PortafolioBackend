@@ -1722,11 +1722,4 @@ Este proyecto está bajo la licencia **MIT**. Ver el archivo `LICENSE` para más
 *Versión 1.0.0 - Febrero 2026*
 
 </div>
-#   P o r t a f o l i o B a k e n d 
- 
- #   P o r t a f o l i o B a k e n d 
- 
- #   P o r t a f o l i o B a c k e n d 
- 
-
- 
+#
