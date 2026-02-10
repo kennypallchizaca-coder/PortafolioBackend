@@ -5,6 +5,7 @@ import com.lexisware.portafolio.project.dtos.ProjectResponseDto;
 import com.lexisware.portafolio.project.entities.ProjectEntity;
 import com.lexisware.portafolio.project.models.Project;
 import com.lexisware.portafolio.portfolio.mappers.PortfolioMapper;
+import com.lexisware.portafolio.portfolio.models.Portfolio;
 import com.lexisware.portafolio.users.mappers.UserMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.context.annotation.Lazy;
@@ -48,12 +49,25 @@ public class ProjectMapper {
         model.setProgrammerName(entity.getProgrammerName());
         model.setCreatedAt(entity.getCreatedAt());
 
-        // Mapea recursivamente el propietario y el portafolio asociado
+        // Mapea el propietario y el portafolio asociado (sin proyectos para evitar recursión)
         if (entity.getOwner() != null) {
             model.setOwner(userMapper.toModel(entity.getOwner()));
         }
         if (entity.getPortfolio() != null) {
-            model.setPortfolio(portfolioMapper.toModel(entity.getPortfolio()));
+            Portfolio pModel = new Portfolio();
+            pModel.setId(entity.getPortfolio().getId());
+            pModel.setUserId(entity.getPortfolio().getUserId());
+            pModel.setTitle(entity.getPortfolio().getTitle());
+            pModel.setDescription(entity.getPortfolio().getDescription());
+            pModel.setTheme(entity.getPortfolio().getTheme());
+            pModel.setIsPublic(entity.getPortfolio().getIsPublic());
+            pModel.setSkills(entity.getPortfolio().getSkills() != null
+                    ? new java.util.ArrayList<>(entity.getPortfolio().getSkills())
+                    : new java.util.ArrayList<>());
+            pModel.setCreatedAt(entity.getPortfolio().getCreatedAt());
+            pModel.setUpdatedAt(entity.getPortfolio().getUpdatedAt());
+            pModel.setProjects(java.util.Collections.emptyList());
+            model.setPortfolio(pModel);
         }
 
         return model;
